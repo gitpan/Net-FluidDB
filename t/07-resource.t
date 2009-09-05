@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 
-use Test::More qw(no_plan);
+use Test::More;
 
-BEGIN {
-    use_ok('Net::FluidDB::Resource');
-}
+use_ok('Net::FluidDB::Resource');
+
+done_testing;

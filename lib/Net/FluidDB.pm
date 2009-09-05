@@ -8,7 +8,7 @@ use JSON::XS;
 
 use Net::FluidDB::Object;
 
-our $VERSION           = '0.01';
+our $VERSION           = '0.02';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -17,8 +17,8 @@ our $JSON_CONTENT_TYPE = 'application/json';
 
 has protocol => (is => 'rw', isa => 'Str', default => $DEFAULT_PROTOCOL);
 has host     => (is => 'rw', isa => 'Str', default => $DEFAULT_HOST);
-has user     => (is => 'rw', isa => 'Str');
-has password => (is => 'rw', isa => 'Str');
+has user     => (is => 'rw', isa => 'Maybe[Str]', default => sub { $ENV{FLUIDDB_USER} });
+has password => (is => 'rw', isa => 'Maybe[Str]', default => sub { $ENV{FLUIDDB_PASSWORD} });
 has ua       => (is => 'ro', isa => 'LWP::UserAgent', writer => '_set_ua');
 
 sub BUILD {
@@ -126,6 +126,8 @@ Net::FluidDB - A Perl interface to FluidDB
  use Net::FluidDB::Tag;
  use Net::FluidDB::Namespace;
 
+ # --- FluidDB ----------------------------------
+
  # predefined FluidDB client for playing around, points
  # to the sandbox with user test/test
  $fdb = Net::FluidDB->new_for_testing;
@@ -133,6 +135,12 @@ Net::FluidDB - A Perl interface to FluidDB
 
  # FluidDB client pointing to production
  $fdb = Net::FluidDB->new(user => 'user', password => 'password');
+ 
+ # FluidDB taking credentials from environment variables
+ # FLUIDDB_USER and FLUIDDB_PASSWORD
+ $fdb = Net::FluidDB->new;
+ 
+ # --- Objects ----------------------------------
  
  # create object, with optional about
  $object = Net::FluidDB::Object->new(
@@ -145,6 +153,12 @@ Net::FluidDB - A Perl interface to FluidDB
  # get object by ID, optionally fetching about
  $object = Net::FluidDB::Object->get($fdb, $object_id, about => 1);
 
+ # namespaces, tags, and users have objects
+ $ns->object_id # a UUID
+ $ns->object    # lazy loaded
+
+ # --- Tags -------------------------------------
+
  # create tags
  $tag = Net::FluidDB::Tag->new(
     fdb         => $fdb,
@@ -156,23 +170,31 @@ Net::FluidDB - A Perl interface to FluidDB
  $tag->namespace; # lazy loaded
 
  # get tag by path, optionally fetching descrition
- $tag = Net::FluidDB::Tag->get($fdb, $tag->path, description => 1);
+ $tag = Net::FluidDB::Tag->get($fdb, $tag_path, description => 1);
  
  # tag objects using an existing tag path
  $object->tag("fxn/rating", 10);
  
+  # get a tag's value on an object by tag path
+ $object->tag("fxn/rating"); # => 10
+ 
  # tag objects using an existing tag object
  $object->tag($tag, "foo");
  
- # get a tag's value on an object by tag path
- $object->tag("fxn/rating"); # => 10
-
  # get a tag's value on an object by tag object
  $object->tag($tag); # => "foo"
+ 
+ # sets of strings are passed as arrayrefs of strings, note in the
+ # example we may get the elements back in different order, that's
+ # because we store and retrieve sets, not ordered collections
+ $object->tag($tag, ["a", "b", "c"]);
+ $object->value($tag); # => ["c", "a", "b"] 
 
  # delete a tag
  $tag->delete;
- 
+
+ # --- Namespaces -------------------------------
+
  # create a namespace by path
  $ns = Net::FluidDB::Namespace->new(
      fdb         => $fdb,
@@ -185,6 +207,40 @@ Net::FluidDB - A Perl interface to FluidDB
  # delete a namespace
  $ns->delete;
 
+ # --- Policies ---------------------------------
+
+ # raw getter
+ $policy = Net::FluidDB::Policy->get($fdb, $user, 'namespaces', 'create');
+ 
+ # convenience getter
+ $policy = Net::FluidDB::Policy->get_create_policy_for_namespaces($fdb, $user);
+ 
+ # checking a policy
+ $policy->policy('open');
+ $policy->exceptions(['test']);
+ $policy->is_open;        # true
+ $policy->is_closed;      # false
+ $policy->has_exceptions; # true
+ $policy->update;
+ 
+ # bulk operations
+ Net::FluidDB::Policy->open_namespaces;
+ Net::FluidDB::Policy->close_tags; # sets the exception list to [$self]
+
+ # --- Permissions ------------------------------
+
+ $perm = Net::FluidDB::Permission->get($fdb, 'namespaces', 'test', 'create');
+ $perm->policy('open');
+ $perm->exceptions(['test']);
+ $pem->is_open;         # true
+ $perm->is_closed;      # false
+ $perm->has_exceptions; # true
+ $perm->update;
+
+ # --- User -------------------------------------
+ 
+ $user = Net::FluidDB::User->get($fdb, 'test');
+ $user->name # => 'test'
 
 =head1 DESCRIPTION
 
@@ -199,7 +255,7 @@ just a few days ago. Check these pages to know about FluidDB:
 
 =item * FluidDB Essence blog entries: L<http://blogs.fluidinfo.com/fluidDB/category/essence/> 
 
-=item * FluidDB API: L<L<http://api.fluidinfo.com/fluidDB/api/*/*/*>
+=item * FluidDB API: L<http://api.fluidinfo.com/fluidDB/api/*/*/*>
 
 =back
 
@@ -242,6 +298,6 @@ This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
-See http://dev.perl.org/licenses/ for more information.
+See L<http://dev.perl.org/licenses/> for more information.
 
 =cut

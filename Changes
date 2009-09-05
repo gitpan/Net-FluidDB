@@ -1,5 +1,11 @@
 Revision history for Net-FluidDB
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+0.02    XXXX-XX-XX
+        * Reworks class hierarchy
+        * Supports users
+        * Supports permissions
+        * Supports policies.
+        * Takes FLUIDDB_(USER|PASSWORD) environment variables as default credentials
 
+0.01    2009-08-28
+        * First version, released on an unsuspecting world

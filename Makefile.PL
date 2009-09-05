@@ -10,12 +10,13 @@ WriteMakefile(
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
-    PL_FILES            => {},
+    PL_FILES=> {},
     PREREQ_PM => {
-        'Test::More' => 0,
-        'LWP'        => 0,
-        'Moose'      => 0,
-        'JSON::XS'   => 0
+        'Test::More'             => 0,
+        'LWP'                    => 0,
+        'Moose'                  => 0,
+        'MooseX::ClassAttribute' => 0,
+        'JSON::XS'               => 0
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Net-FluidDB-*' },

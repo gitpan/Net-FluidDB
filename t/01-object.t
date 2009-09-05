@@ -1,17 +1,14 @@
 use strict;
 use warnings;
 
-use Test::More qw(no_plan);
-use Time::HiRes 'time';
+use FindBin qw($Bin);
+use lib $Bin;
+
+use Test::More;
 use Net::FluidDB;
+use Net::FluidDB::TestUtils;
 
-sub random_about {
-    "Net::FluidDB random about @{[time]} - @{[rand]}"
-}
-
-BEGIN {
-    use_ok('Net::FluidDB::Object');
-}
+use_ok('Net::FluidDB::Object');
 
 my $fdb = Net::FluidDB->new_for_testing;
 
@@ -22,7 +19,6 @@ $about = random_about;
 $object = Net::FluidDB::Object->new(fdb => $fdb, about => $about);
 ok $object->create;
 ok $object->has_id;
-ok $object->object eq $object;
 ok $object->about eq $about;
 
 # fetches that very object
@@ -40,3 +36,5 @@ ok !$object->has_about;
 $object2 = Net::FluidDB::Object->get($fdb, $object->id);
 ok $object2->id eq $object->id;
 ok !$object2->has_about;
+
+done_testing;

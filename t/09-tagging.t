@@ -1,24 +1,15 @@
 use strict;
 use warnings;
 
-use Test::More qw(no_plan);
-use Time::HiRes 'time';
+use FindBin qw($Bin);
+use lib $Bin;
+
+use Test::More;
 use Net::FluidDB;
 use Net::FluidDB::Object;
 use Net::FluidDB::Tag;
 use Net::FluidDB::Value;
-
-sub random_about {
-    "Net::FluidDB random about @{[time]} - @{[rand]}"
-}
-
-sub random_description {
-    "Net::FluidDB tag description @{[time]} - @{[rand]}"
-}
-
-sub random_name {
-    "net-fluiddb-tag-@{[time]}-@{[rand]}"
-}
+use Net::FluidDB::TestUtils;
 
 my $fdb = Net::FluidDB->new_for_testing;
 
@@ -60,3 +51,5 @@ ok $object->tag($path, Net::FluidDB::Value->new(value => [qw(foo bar baz)]));
 is_deeply [sort @{$object->value($path)}], [sort qw(foo bar baz)];
 
 ok $tag->delete;
+
+done_testing;

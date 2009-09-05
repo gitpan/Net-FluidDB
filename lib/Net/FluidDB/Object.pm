@@ -1,24 +1,20 @@
 package Net::FluidDB::Object;
 use Moose;
-extends 'Net::FluidDB::Resource';
+extends 'Net::FluidDB::Base';
 
 use JSON::XS;
 use Net::FluidDB::Value;
 
+has id        => (is => 'ro', isa => 'Str', writer => '_set_id', predicate => 'has_id');
 has about     => (is => 'rw', isa => 'Str', predicate => 'has_about');
 has tag_paths => (is => 'ro', isa => 'ArrayRef[Str]', writer => '_set_tag_paths', default => sub { [] });
-
-sub _build_object {
-    my $self = shift;
-    $self;
-}
 
 sub create {
     my $self = shift;
 
     my $payload = encode_json($self->has_about ? {about => $self->about} : {});
     my $response = $self->fdb->post(
-        path    => '/objects',
+        path    => $self->abs_path('objects'),
         headers => $self->fdb->headers_for_json,
         payload => $payload
     );
@@ -37,7 +33,7 @@ sub get {
     
     $opts{showAbout} = 1 if delete $opts{about};
     my $response = $fdb->get(
-        path    => "/objects/$id",
+        path    => $class->abs_path('objects', $id),
         query   => \%opts,
         headers => $fdb->accept_header_for_json
     );
@@ -80,7 +76,7 @@ sub tag {
     }
     
     my $response = $self->fdb->put(
-        path    => join('/', '/objects', $self->id, $tag_path),
+        path    => $self->abs_path('objects', $self->id, $tag_path),
         query   => {format => 'json'},
         headers => $self->fdb->content_type_header_for_json,
         payload => $payload
@@ -99,7 +95,7 @@ sub value {
     
     my $tag_path = $self->get_tag_path_from_tag_or_tag_path($tag_or_tag_path);
     my $response = $self->fdb->get(
-        path    => join('/', '/objects', $self->id, $tag_path),
+        path    => $self->abs_path('objects', $self->id, $tag_path),
         query   => {format => 'json'},
         headers => $self->fdb->accept_header_for_json,
     );

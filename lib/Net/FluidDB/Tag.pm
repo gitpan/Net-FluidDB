@@ -11,6 +11,10 @@ has indexed     => (is => 'rw', isa => 'Bool');
 has name        => (is => 'rw', isa => 'Str', lazy_build => 1);
 has path        => (is => 'rw', isa => 'Str', lazy_build => 1);
 
+our %FULL_GET_FLAGS = (
+    description => 1
+);
+
 sub _build_namespace {
     # TODO: add croaks for dependencies
     my $self = shift;
@@ -50,14 +54,15 @@ sub create {
     });
     
     my $response = $self->fdb->post(
-        path    => '/tags/' . $self->path_of_namespace,
+        path    => $self->abs_path('tags', $self->path_of_namespace),
         headers => $self->fdb->headers_for_json,
         payload => $payload
     );
     
     if ($response->is_success) {
         my $h = decode_json($response->content);
-        $self->_set_id($h->{id});
+        $self->_set_object_id($h->{id});
+        1;
     } else {
         print STDERR $response->content, "\n";
         0;
@@ -69,14 +74,16 @@ sub get {
 
     $opts{returnDescription} = 1 if delete $opts{description};
     my $response = $fdb->get(
-        path    => "/tags/$path",
+        path    => $class->abs_path('tags', $path),
         query   => \%opts,
         headers => $fdb->accept_header_for_json
     );
 
     if ($response->is_success) {
         my $h = decode_json($response->content);
-        $class->new(fdb => $fdb, path => $path, %$h);
+        my $t = $class->new(fdb => $fdb, path => $path, %$h);
+        $t->_set_object_id($h->{id});
+        $t;
     } else {
         print STDERR $response->content, "\n";
         0;
@@ -86,7 +93,7 @@ sub get {
 sub delete {
     my $self = shift;
 
-    my $response = $self->fdb->delete(path => '/tags/' . $self->path);
+    my $response = $self->fdb->delete(path => $self->abs_path('tags', $self->path));
     if ($response->is_success) {
         1;
     } else {

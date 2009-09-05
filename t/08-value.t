@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More qw(no_plan);
+use Test::More;
 use Net::FluidDB::Value;
 use JSON::XS;
 
@@ -31,3 +31,5 @@ ok_json new_json(value => 0, valueType => '1'), new_value(value => 0, value_type
 ok_json new_json(value => 0, valueEncoding => '2'), new_value(value => 0, value_encoding => '2');
 
 ok_json new_json(value => 0, valueType => '1', valueEncoding => '2'), new_value(value => 0, value_type => '1', value_encoding => '2');
+
+done_testing;

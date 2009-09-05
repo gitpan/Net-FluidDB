@@ -56,19 +56,17 @@ sub path_of_parent {
 sub create {
     my $self = shift;
 
-    my $path = '/namespaces';
-    my $path_of_parent = $self->path_of_parent;
-    $path .= "/$path_of_parent" if $path_of_parent ne "";
     my $payload = encode_json({description => $self->description, name => $self->name});
     my $response = $self->fdb->post(
-        path    => $path,
+        path    => $self->abs_path('namespaces', $self->path_of_parent),
         headers => $self->fdb->headers_for_json,
         payload => $payload
     );
 
     if ($response->is_success) {
         my $h = decode_json($response->content);        
-        $self->_set_id($h->{id});
+        $self->_set_object_id($h->{id});
+        1;
     } else {
         print STDERR $response->content, "\n";
         0;
@@ -82,16 +80,18 @@ sub get {
         $opts{"return\u$key"} = 1 if delete $opts{$key};    
     }
     my $response = $fdb->get(
-        path    => "/namespaces/$path",
+        path    => $class->abs_path('namespaces', $path),
         query   => \%opts,
         headers => $fdb->accept_header_for_json
     );
 
     if ($response->is_success) {
         my $h = decode_json($response->content);
-        my $ns = $class->new(fdb => $fdb, path => $path, %$h);
+        my $ns = $class->new(fdb => $fdb, path => $path);
+        $ns->_set_object_id($h->{id});
+        $ns->description($h->{description})             if $opts{returnDescription};
         $ns->_set_namespace_names($h->{namespaceNames}) if $opts{returnNamespaces};
-        $ns->_set_tag_names($h->{tagNames}) if $opts{returnTags};
+        $ns->_set_tag_names($h->{tagNames})             if $opts{returnTags};
         $ns;
     } else {
         print STDERR $response->content, "\n";
@@ -105,7 +105,7 @@ sub update {
 
     my $payload = encode_json({description => $self->description});
     my $response = $self->fdb->put(
-        path    => '/namespaces/' . $self->path,
+        path    => $self->abs_path('namespaces', $self->path),
         headers => $self->fdb->headers_for_json,
         payload => $payload
     );
@@ -120,7 +120,7 @@ sub update {
 
 sub delete {
     my $self = shift;
-    my $response = $self->fdb->delete(path => '/namespaces/' . $self->path);
+    my $response = $self->fdb->delete(path => $self->abs_path('namespaces', $self->path));
     if ($response->is_success) {
         1;
     } else {
