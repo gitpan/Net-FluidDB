@@ -4,23 +4,23 @@ extends 'Net::FluidDB::Resource';
 
 use JSON::XS;
 
-has name => (is => 'ro', isa => 'Str');
+has name     => (is => 'ro', isa => 'Str');
+has username => (is => 'ro', isa => 'Str');
 
 sub get {
-    my ($class, $fdb, $name) = @_;
+    my ($class, $fdb, $username) = @_;
 
     my $response = $fdb->get(
-        path    => $class->abs_path('users', $name),
-        headers => $fdb->accept_header_for_json
+        path       => $class->abs_path('users', $username),
+        headers    => $fdb->accept_header_for_json,
+        on_success => sub {
+            my $response = shift;
+            my $h = decode_json($response->content);
+            my $user = $class->new(fdb => $fdb, username => $username, %$h);
+            $user->_set_object_id($h->{id});
+            $user;
+        }
     );
-    
-    if ($response->is_success) {
-        my $h = decode_json($response->content);
-        $class->new(fdb => $fdb, %$h);
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 no Moose;

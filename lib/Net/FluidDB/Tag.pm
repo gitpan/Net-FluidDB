@@ -53,53 +53,40 @@ sub create {
         name        => $self->name
     });
     
-    my $response = $self->fdb->post(
-        path    => $self->abs_path('tags', $self->path_of_namespace),
-        headers => $self->fdb->headers_for_json,
-        payload => $payload
+    $self->fdb->post(
+        path       => $self->abs_path('tags', $self->path_of_namespace),
+        headers    => $self->fdb->headers_for_json,
+        payload    => $payload,
+        on_success => sub {
+            my $response = shift;
+            my $h = decode_json($response->content);
+            $self->_set_object_id($h->{id});            
+        }
     );
-    
-    if ($response->is_success) {
-        my $h = decode_json($response->content);
-        $self->_set_object_id($h->{id});
-        1;
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 sub get {
     my ($class, $fdb, $path, %opts) = @_;
 
     $opts{returnDescription} = 1 if delete $opts{description};
-    my $response = $fdb->get(
-        path    => $class->abs_path('tags', $path),
-        query   => \%opts,
-        headers => $fdb->accept_header_for_json
+    $fdb->get(
+        path       => $class->abs_path('tags', $path),
+        query      => \%opts,
+        headers    => $fdb->accept_header_for_json,
+        on_success => sub {
+            my $response = shift;
+            my $h = decode_json($response->content);
+            my $t = $class->new(fdb => $fdb, path => $path, %$h);
+            $t->_set_object_id($h->{id});
+            $t;            
+        }
     );
-
-    if ($response->is_success) {
-        my $h = decode_json($response->content);
-        my $t = $class->new(fdb => $fdb, path => $path, %$h);
-        $t->_set_object_id($h->{id});
-        $t;
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 sub delete {
     my $self = shift;
 
-    my $response = $self->fdb->delete(path => $self->abs_path('tags', $self->path));
-    if ($response->is_success) {
-        1;
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
+    $self->fdb->delete(path => $self->abs_path('tags', $self->path));
 }
 
 no Moose;

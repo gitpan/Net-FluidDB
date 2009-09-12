@@ -1,6 +1,14 @@
 Revision history for Net-FluidDB
 
-0.02    XXXX-XX-XX
+0.03    2009-09-12
+        * Cleanup
+        * Documents a couple of modules
+        * Adds forgotten t/Net/FluidDB/TestUtils.pm to MANIFEST
+        * The API of policies accepts both usernames and users as arguments
+        * Net::FluidDB has a user() convenience accessor (lazy loaded)
+        * Fixed a bug related to user name initialization
+
+0.02    2009-09-04
         * Reworks class hierarchy
         * Supports users
         * Supports permissions

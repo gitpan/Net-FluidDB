@@ -7,8 +7,9 @@ use URI;
 use JSON::XS;
 
 use Net::FluidDB::Object;
+use Net::FluidDB::User;
 
-our $VERSION           = '0.02';
+our $VERSION           = '0.03';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -17,9 +18,10 @@ our $JSON_CONTENT_TYPE = 'application/json';
 
 has protocol => (is => 'rw', isa => 'Str', default => $DEFAULT_PROTOCOL);
 has host     => (is => 'rw', isa => 'Str', default => $DEFAULT_HOST);
-has user     => (is => 'rw', isa => 'Maybe[Str]', default => sub { $ENV{FLUIDDB_USER} });
+has username => (is => 'rw', isa => 'Maybe[Str]', default => sub { $ENV{FLUIDDB_USERNAME} });
 has password => (is => 'rw', isa => 'Maybe[Str]', default => sub { $ENV{FLUIDDB_PASSWORD} });
 has ua       => (is => 'ro', isa => 'LWP::UserAgent', writer => '_set_ua');
+has user     => (is => 'ro', isa => 'Net::FluidDB::User', lazy_build => 1);
 
 sub BUILD {
     my ($self, $attrs) = @_;
@@ -34,9 +36,14 @@ sub BUILD {
     $self->_set_ua($ua);
 }
 
+sub _build_user {
+    my $self = shift;
+    Net::FluidDB::User->get($self, $self->username);
+}
+
 sub new_for_testing {
     my ($class, %attrs) = @_;
-    $class->new(user => 'test', password => 'test', host => $SANDBOX_HOST, %attrs);
+    $class->new(username => 'test', password => 'test', host => $SANDBOX_HOST, %attrs);
 }
 
 sub get {
@@ -60,30 +67,44 @@ sub delete {
 }
 
 sub request {
-    my ($self, $method, %attrs) = @_;
+    my ($self, $method, %opts) = @_;
 
     my $request = HTTP::Request->new;
-    $request->authorization_basic($self->user, $self->password);
+    $request->authorization_basic($self->username, $self->password);
     $request->method($method);
-    $request->uri($self->uri_for(%attrs));
-    if (exists $attrs{headers}) {
-        while (my ($header, $value) = each %{$attrs{headers}}) {
+    $request->uri($self->uri_for(%opts));
+    if (exists $opts{headers}) {
+        while (my ($header, $value) = each %{$opts{headers}}) {
             $request->header($header => $value);
         }
     }
-    $request->content($attrs{payload}) if exists $attrs{payload};
+    $request->content($opts{payload}) if exists $opts{payload};
 
-    $self->ua->request($request);
+    my $response = $self->ua->request($request);
+    if ($response->is_success) {
+        if (exists $opts{on_success}) {
+            $opts{on_success}->($response);
+        } else {
+            1;
+        }
+    } else {
+        if (exists $opts{on_failure}) {
+            $opts{on_failure}->($response);
+        } else {
+            print STDERR $response->content, "\n";
+            0;
+        }        
+    }
 }
 
 sub uri_for {
-    my ($self, %attrs) = @_;
+    my ($self, %opts) = @_;
 
     my $uri = URI->new;
     $uri->scheme(lc $self->protocol);
     $uri->host($self->host);
-    $uri->path($attrs{path});
-    $uri->query_form($attrs{query}) if exists $attrs{query};
+    $uri->path($opts{path});
+    $uri->query_form($opts{query}) if exists $opts{query};
     $uri;
 }
 
@@ -125,6 +146,9 @@ Net::FluidDB - A Perl interface to FluidDB
  use Net::FluidDB::Object;
  use Net::FluidDB::Tag;
  use Net::FluidDB::Namespace;
+ use Net::FluidDB::Policy;
+ use Net::FluidDB::Permission;
+ use Net::FluidDB::User;
 
  # --- FluidDB ----------------------------------
 
@@ -134,10 +158,10 @@ Net::FluidDB - A Perl interface to FluidDB
  $fdb = Net::FluidDB->new_for_testing(trace_http => 1);
 
  # FluidDB client pointing to production
- $fdb = Net::FluidDB->new(user => 'user', password => 'password');
+ $fdb = Net::FluidDB->new(username => 'user', password => 'password');
  
  # FluidDB taking credentials from environment variables
- # FLUIDDB_USER and FLUIDDB_PASSWORD
+ # FLUIDDB_USERNAME and FLUIDDB_PASSWORD
  $fdb = Net::FluidDB->new;
  
  # --- Objects ----------------------------------
@@ -210,10 +234,10 @@ Net::FluidDB - A Perl interface to FluidDB
  # --- Policies ---------------------------------
 
  # raw getter
- $policy = Net::FluidDB::Policy->get($fdb, $user, 'namespaces', 'create');
+ $policy = Net::FluidDB::Policy->get($fdb, $username, 'namespaces', 'create');
  
  # convenience getter
- $policy = Net::FluidDB::Policy->get_create_policy_for_namespaces($fdb, $user);
+ $policy = Net::FluidDB::Policy->get_create_policy_for_namespaces($fdb, $username);
  
  # checking a policy
  $policy->policy('open');
@@ -232,7 +256,7 @@ Net::FluidDB - A Perl interface to FluidDB
  $perm = Net::FluidDB::Permission->get($fdb, 'namespaces', 'test', 'create');
  $perm->policy('open');
  $perm->exceptions(['test']);
- $pem->is_open;         # true
+ $perm->is_open;        # true
  $perm->is_closed;      # false
  $perm->has_exceptions; # true
  $perm->update;
@@ -240,7 +264,7 @@ Net::FluidDB - A Perl interface to FluidDB
  # --- User -------------------------------------
  
  $user = Net::FluidDB::User->get($fdb, 'test');
- $user->name # => 'test'
+ $user->username # => 'test'
 
 =head1 DESCRIPTION
 

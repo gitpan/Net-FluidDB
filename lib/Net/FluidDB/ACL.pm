@@ -36,3 +36,77 @@ no MooseX::ClassAttribute;
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=head1 NAME
+
+Net::FluidDB::ACL - A common ancestor for classes that provide an ACL
+
+=head1 SYNOPSIS
+
+ $permission->policy('open');
+ my $exceptions = $permission->exceptions;
+ 
+ $policy->is_open;
+ $policy->is_closed;
+ $policy->has_exceptions;
+
+=head1 DESCRIPTION
+
+Net::FluidDB::ACL is a parent class of L<Net::FluidDB::Policy> and
+L<Net::FluidDB::Permission>.
+
+You don't usually need this class, only the interface its children inherit.
+
+=head1 USAGE
+
+=head2 Instance Methods
+
+=over 4
+
+=item $acl->policy
+
+=item $acl->policy('open'|'closed')
+
+Sets/gets the policy, which must be either 'open' or 'closed'. Note this is not an
+instance of L<Net::FluidDB::Policy> (the name clash is inherited from the API).
+
+=item $acl->exceptions
+
+=item $acl->exceptions($exceptions)
+
+Gets/sets the exception list of this ACL, which is a possibly empty arrayref of usernames.
+In FluidDB this is a set, so don't rely on the order of the elements.
+
+=item $acl->is_open
+
+Checks whether the ACL is open.
+
+=item $acl->is_closed
+
+Checks whether the ACL is closed.
+
+=item $acl->has_exceptions
+
+Checks whether the ACL has any exception.
+
+=back
+
+
+=head1 AUTHOR
+
+Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
+
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 Xavier Noria
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
+
+=cut

@@ -16,7 +16,7 @@ my ($tag, $tag2, $description, $name, $path);
 
 $description = random_description;
 $name = random_name;
-$path = $fdb->user . "/$name";
+$path = $fdb->username . "/$name";
 
 # create a tag
 $tag = Net::FluidDB::Tag->new(
@@ -29,8 +29,8 @@ ok $tag->create;
 ok $tag->has_object_id;
 ok $tag->object->id eq $tag->object_id;
 ok $tag->name eq $name;
-ok $tag->path_of_namespace eq $fdb->user;
-ok $tag->namespace->name eq $fdb->user;
+ok $tag->path_of_namespace eq $fdb->username;
+ok $tag->namespace->name eq $fdb->username;
 ok $tag->path eq $path;
 
 # fetch it

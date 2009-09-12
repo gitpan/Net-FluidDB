@@ -21,7 +21,7 @@ ok $object->create;
 
 $description = random_description;
 $name = random_name;
-$path = $fdb->user . "/$name";
+$path = $fdb->username . "/$name";
 
 # create a tag
 $tag = Net::FluidDB::Tag->new(

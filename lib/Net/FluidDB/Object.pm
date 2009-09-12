@@ -13,41 +13,35 @@ sub create {
     my $self = shift;
 
     my $payload = encode_json($self->has_about ? {about => $self->about} : {});
-    my $response = $self->fdb->post(
-        path    => $self->abs_path('objects'),
-        headers => $self->fdb->headers_for_json,
-        payload => $payload
+    $self->fdb->post(
+        path       => $self->abs_path('objects'),
+        headers    => $self->fdb->headers_for_json,
+        payload    => $payload,
+        on_success => sub {
+            my $response = shift;
+            my $h = decode_json($response->content);        
+            $self->_set_id($h->{id});
+        }
     );
-
-    if ($response->is_success) {
-        my $h = decode_json($response->content);        
-        $self->_set_id($h->{id});
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 sub get {
     my ($class, $fdb, $id, %opts) = @_;
     
     $opts{showAbout} = 1 if delete $opts{about};
-    my $response = $fdb->get(
-        path    => $class->abs_path('objects', $id),
-        query   => \%opts,
-        headers => $fdb->accept_header_for_json
+    $fdb->get(
+        path       => $class->abs_path('objects', $id),
+        query      => \%opts,
+        headers    => $fdb->accept_header_for_json,
+        on_success => sub {
+            my $response = shift;
+            my $h = decode_json($response->content);
+            my $o = $class->new(fdb => $fdb, %$h);
+            $o->_set_id($id);
+            $o->_set_tag_paths($h->{tagPaths});
+            $o;            
+        }
     );
-
-    if ($response->is_success) {
-        my $h = decode_json($response->content);
-        my $o = $class->new(fdb => $fdb, %$h);
-        $o->_set_id($id);
-        $o->_set_tag_paths($h->{tagPaths});
-        $o;
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 sub get_by_about {
@@ -75,39 +69,29 @@ sub tag {
         # TODO: supported keys are file, format, etc. explore this interface
     }
     
-    my $response = $self->fdb->put(
+    $self->fdb->put(
         path    => $self->abs_path('objects', $self->id, $tag_path),
         query   => {format => 'json'},
         headers => $self->fdb->content_type_header_for_json,
         payload => $payload
     );
-
-    if ($response->is_success) {
-        1;
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 sub value {
     my ($self, $tag_or_tag_path, @rest) = @_;
     
     my $tag_path = $self->get_tag_path_from_tag_or_tag_path($tag_or_tag_path);
-    my $response = $self->fdb->get(
+    $self->fdb->get(
         path    => $self->abs_path('objects', $self->id, $tag_path),
         query   => {format => 'json'},
         headers => $self->fdb->accept_header_for_json,
+        on_success => sub {
+            my $response = shift;
+            my $h = decode_json($response->content);
+            my $v = Net::FluidDB::Value->new(%$h);
+            $v->has_value_encoding || $v->has_value_type ? $v : $v->value;
+        }
     );
-    
-    if ($response->is_success) {
-        my $h = decode_json($response->content);
-        my $v = Net::FluidDB::Value->new(%$h);
-        $v->has_value_encoding || $v->has_value_type ? $v : $v->value;
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }    
 }
 
 sub get_tag_path_from_tag_or_tag_path {

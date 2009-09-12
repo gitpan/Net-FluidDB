@@ -33,25 +33,28 @@ sub check_perm {
     ok_sets_cmp $perm2->exceptions, $perm->exceptions;
 }
 
-my ($user, $password) = net_fluiddb_credentials;
+my ($username, $password) = net_fluiddb_credentials;
 
-unless (defined $user && defined $password) {
+unless (defined $username && defined $password) {
     plan skip_all => skip_all_message;
     exit 0;
 }
+
+skip_suite_unless_run_all;
 
 use_ok('Net::FluidDB::Permission');
 
 my ($perm, $path, $ns, $tag);
 
-my $fdb = Net::FluidDB->new(user => $user, password => $password);
-
+my $fdb = Net::FluidDB->new_for_testing;
+$fdb->username($username);
+$fdb->password($password);
 
 # --- Seed data ---------------------------------------------------------------
 
 reset_policies($fdb);
 
-$path = "$user/" . random_name;
+$path = "$username/" . random_name;
 $ns = Net::FluidDB::Namespace->new(
     fdb         => $fdb,
     description => random_description,
@@ -59,7 +62,7 @@ $ns = Net::FluidDB::Namespace->new(
 );
 ok $ns->create;
 
-$path = "$user/" . random_name;
+$path = "$username/" . random_name;
 $tag = Net::FluidDB::Tag->new(
     fdb         => $fdb,
     description => random_description,
@@ -84,7 +87,7 @@ while (my ($category, $actions) = each %{Net::FluidDB::Permission->Actions}) {
         is_permission $perm;
 
         ok $perm->is_closed;
-        ok_sets_cmp $perm->exceptions, [$user];
+        ok_sets_cmp $perm->exceptions, [$username];
     }
 }
 
@@ -117,7 +120,7 @@ foreach my $category (keys %{Net::FluidDB::Permission->Actions}) {
     foreach my $pname ('open', 'closed') {
         foreach my $exceptions ([], ['foo'], ['foo', 'bar', 'baz', 'woo', 'zoo']) {
             my @e = @$exceptions;
-            push @e, $user if $pname eq 'closed';
+            push @e, $username if $pname eq 'closed';
             my $perm = Net::FluidDB::Permission->get($fdb, $category, $paths{$category}, 'control');
             is_permission $perm;
 

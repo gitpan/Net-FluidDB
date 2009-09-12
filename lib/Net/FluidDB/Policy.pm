@@ -4,43 +4,40 @@ extends 'Net::FluidDB::ACL';
 
 use JSON::XS;
 
-has user     => (is => 'ro', isa => 'Str');
+has username => (is => 'ro', isa => 'Str');
 has category => (is => 'ro', isa => 'Str');
 has action   => (is => 'ro', isa => 'Str');
 
 sub get {
-    my ($class, $fdb, $user, $category, $action) = @_;
+    my ($class, $fdb, $user_or_username, $category, $action) = @_;
     
-    my $response = $fdb->get(
-        path    => $class->abs_path('policies', $user, $category, $action),
-        headers => $fdb->accept_header_for_json
+    my $username = $class->get_username_from_user_or_username($user_or_username);
+    $fdb->get(
+        path       => $class->abs_path('policies', $username, $category, $action),
+        headers    => $fdb->accept_header_for_json,
+        on_success => sub {
+            my $response = shift;
+            my $h = decode_json($response->content);
+            $class->new(
+                fdb      => $fdb,
+                username => $username,
+                category => $category,
+                action   => $action,
+                %$h
+            );
+        }
     );
-    
-    if ($response->is_success) {
-        my $h = decode_json($response->content);
-        $class->new(fdb => $fdb, user => $user, category => $category, action => $action, %$h);
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 sub update {
     my $self = shift;
 
     my $payload = encode_json({policy => $self->policy, exceptions => $self->exceptions});
-    my $response = $self->fdb->put(
-        path    => $self->abs_path('policies', $self->user, $self->category, $self->action),
+    $self->fdb->put(
+        path    => $self->abs_path('policies', $self->username, $self->category, $self->action),
         headers => $self->fdb->headers_for_json,
         payload => $payload
     );
-
-    if ($response->is_success) {
-        1;        
-    } else {
-        print STDERR $response->content, "\n";
-        0;
-    }
 }
 
 # Generates convenience methods to completely open or close resources.
@@ -58,13 +55,14 @@ while (my ($category, $actions) = each %{__PACKAGE__->Actions}) {
         my $method_name = "${prefix}_${category}";
         $method_name =~ tr/-/_/; # tag-values -> tag_values
         *$method_name = sub {
-            my ($class, $fdb, $user) = @_;
+            my ($class, $fdb, $user_or_username) = @_;
 
-            $user = $fdb->user if not defined $user;
+            my $username = $class->get_username_from_user_or_username($user_or_username);
+            $username = $fdb->username if not defined $username;
             foreach my $action (@$actions) {
-                my $policy = $class->get($fdb, $user, $category, $action);
+                my $policy = $class->get($fdb, $username, $category, $action);
                 $policy->policy($prefix eq 'open' ? 'open' : 'closed');
-                $policy->exceptions($prefix eq 'open' ? [] : [$user]);
+                $policy->exceptions($prefix eq 'open' ? [] : [$username]);
                 my $status = $policy->update;
                 return $status unless $status;
             }
@@ -88,10 +86,16 @@ while (my ($category, $actions) = each %{__PACKAGE__->Actions}) {
         my $method_name = "get_${action}_policy_for_${category}";
         $method_name =~ tr/-/_/; # tag-values -> tag_values
         *$method_name = sub {
-            my ($class, $fdb, $user) = @_;
-            $class->get($fdb, $user, $category, $action);
+            my ($class, $fdb, $user_or_username) = @_;
+            my $username = $class->get_username_from_user_or_username($user_or_username);
+            $class->get($fdb, $username, $category, $action);
         };
     }
+}
+
+sub get_username_from_user_or_username {
+    my ($receiver, $user_or_username) = @_;
+    ref $user_or_username ? $user_or_username->username : $user_or_username;
 }
 
 no Moose;
