@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Net-FluidDB
-version:            0.03
+version:            0.04
 abstract:           A Perl interface to FluidDB
 author:
     - Xavier Noria <fxn@cpan.org>

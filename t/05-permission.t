@@ -66,6 +66,7 @@ $path = "$username/" . random_name;
 $tag = Net::FluidDB::Tag->new(
     fdb         => $fdb,
     description => random_description,
+    indexed     => 0,
     path        => $path
 );
 ok $tag->create;

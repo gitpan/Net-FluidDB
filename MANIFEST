@@ -5,11 +5,11 @@ README
 lib/Net/FluidDB.pm
 lib/Net/FluidDB/ACL.pm
 lib/Net/FluidDB/Base.pm
+lib/Net/FluidDB/HasObject.pm
 lib/Net/FluidDB/Namespace.pm
 lib/Net/FluidDB/Object.pm
 lib/Net/FluidDB/Permission.pm
 lib/Net/FluidDB/Policy.pm
-lib/Net/FluidDB/Resource.pm
 lib/Net/FluidDB/Tag.pm
 lib/Net/FluidDB/User.pm
 lib/Net/FluidDB/Value.pm
@@ -20,12 +20,14 @@ t/03-tag.t
 t/04-policy.t
 t/05-permission.t
 t/06-user.t
-t/07-resource.t
+t/07-has_object.t
 t/08-value.t
 t/09-tagging.t
 t/10-acl.t
 t/11-base.t
+t/12-search.t
 t/Net/FluidDB/TestUtils.pm
+THANKS
 
 
 

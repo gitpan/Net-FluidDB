@@ -63,7 +63,7 @@ You don't usually need this class, only the interface its children inherit.
 
 =head2 Instance Methods
 
-=over 4
+=over
 
 =item $acl->policy
 

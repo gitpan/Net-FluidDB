@@ -21,6 +21,13 @@ sub delete {
     shift->croak_about("delete"); 
 }
 
+sub croak_about {
+    my ($receiver, $method) = @_;
+    my $name = ref $receiver;
+    $name ||= $receiver;
+    croak "$method is not supported (or yet implemented) for $name";
+}
+
 # Utility method, could be extracted to a Utils module.
 sub abs_path {
     my $receiver = shift;
@@ -34,6 +41,8 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
 
 =head1 NAME
 
@@ -62,7 +71,7 @@ which comes from this class:
 
 =head2 Instance Methods
 
-=over 4
+=over
 
 =item $base->fdb
 

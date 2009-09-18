@@ -35,11 +35,21 @@ ok $tag->path eq $path;
 
 # fetch it
 $tag2 = Net::FluidDB::Tag->get($fdb, $tag->path, description => 1);
+ok $tag2->description eq $tag->description;
+ok $tag2->indexed;
 ok $tag2->object_id eq $tag->object_id;
 ok $tag2->name eq $tag->name;
 ok $tag2->path_of_namespace eq $tag->path_of_namespace;
 ok $tag2->namespace->name eq $tag->namespace->name;
 ok $tag2->path eq $tag->path;
+
+# update description
+$description = random_description;
+$tag->description($description);
+ok $tag->update;
+
+$tag2 = Net::FluidDB::Tag->get($fdb, $tag->path, description => 1);
+ok $tag2->description eq $tag->description;
 
 # delete it
 ok $tag->delete;

@@ -1,5 +1,18 @@
 Revision history for Net-FluidDB
 
+0.04    2009-09-18
+        * Now marked as beta
+        * Complete FluidDB API coverage (except for non-native tag values)
+        * Complete documentation (except for tag values)
+        * Added THANKS file
+        * Object search contributed by JJ Merelo
+        * Refactors the Resource class as a Moose role called HasObject
+        * In Namespace->get, the "namespaces" and "tags" flags have been
+          renamed to "namespace_names" and "tag_names" respectively
+        * Namespace attributes "parent", "name", and "path" are now read-only
+        * Tag attributes "indexed", "namespace", "name", and "path" are now read-only
+        * The "indexed" attribute is required in the Tag constructor
+
 0.03    2009-09-12
         * Cleanup
         * Documents a couple of modules

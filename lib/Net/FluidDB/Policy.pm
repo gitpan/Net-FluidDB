@@ -102,3 +102,109 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=head1 NAME
+
+Net::FluidDB::Policy - FluidDB policies
+
+=head1 SYNOPSIS
+
+ use Net::FluidDB::Policy;
+
+ # get
+ $policy = Net::FluidDB::Policy->get($fdb, $user_or_username, $category, $action);
+ $policy->policy;
+ $policy->exceptions;
+
+ # update
+ $policy->policy('closed');
+ $policy->exceptions($exceptions);
+ $policy->update;
+
+=head1 DESCRIPTION
+
+Net::FluidDB::Policy models FluidDB policies.
+
+=head1 USAGE
+
+=head2 Inheritance
+
+C<Net::FluidDB::Policy> is a subclass of L<Net::FluidDB::ACL>.
+
+=head2 Class methods
+
+=over
+
+=item Net::FluidDB::Policy->get($fdb, $user_or_username, $category, $action)
+
+Retrieves the policy on action C<$action>, for the category C<$category> of
+user C<$user_or_username>.
+
+=item Net::FluidDB::Policy->get_I<action>_policy_for_I<category>($fdb, $user_or_username)
+
+These are convenience methods, there's one for each defined pair action/category:
+
+     get_create_policy_for_namespaces
+     ...
+     get_update_policy_for_tags
+     ...
+     get_read_policy_for_tag_values
+     ...
+
+=back
+
+=head2 Instance Methods
+
+=over
+
+=item $tag->update
+
+Updates the policy in FluidDB.
+
+=item $tag->username
+
+Returns the username of the user the policy concerns to.
+
+=item $tag->category
+
+Returns the category the policy is about.
+
+=item $tag->action
+
+Returns the action the policy is about.
+
+=back
+
+=head1 FLUIDDB DOCUMENTATION
+
+=over
+
+=item FluidDB high-level description
+
+L<http://doc.fluidinfo.com/fluidDB/permissions.html#policies-and-their-exceptions>
+
+=item FluidDB API specification
+
+L<http://api.fluidinfo.com/fluidDB/api/*/policies/*>
+
+=back
+
+=head1 AUTHOR
+
+Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
+
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 Xavier Noria
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
+
+=cut
+

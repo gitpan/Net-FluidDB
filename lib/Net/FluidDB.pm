@@ -9,7 +9,7 @@ use JSON::XS;
 use Net::FluidDB::Object;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.03';
+our $VERSION           = '0.04';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -127,7 +127,6 @@ sub content_type_header_for_json {
     }
 }
 
-
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
@@ -143,14 +142,6 @@ Net::FluidDB - A Perl interface to FluidDB
 =head1 SYNOPSIS
 
  use Net::FluidDB;
- use Net::FluidDB::Object;
- use Net::FluidDB::Tag;
- use Net::FluidDB::Namespace;
- use Net::FluidDB::Policy;
- use Net::FluidDB::Permission;
- use Net::FluidDB::User;
-
- # --- FluidDB ----------------------------------
 
  # predefined FluidDB client for playing around, points
  # to the sandbox with user test/test
@@ -158,161 +149,159 @@ Net::FluidDB - A Perl interface to FluidDB
  $fdb = Net::FluidDB->new_for_testing(trace_http => 1);
 
  # FluidDB client pointing to production
- $fdb = Net::FluidDB->new(username => 'user', password => 'password');
+ $fdb = Net::FluidDB->new(username => 'username', password => 'password');
  
  # FluidDB taking credentials from environment variables
  # FLUIDDB_USERNAME and FLUIDDB_PASSWORD
  $fdb = Net::FluidDB->new;
- 
- # --- Objects ----------------------------------
- 
- # create object, with optional about
- $object = Net::FluidDB::Object->new(
-     fdb   => $fdb,
-     about => $unique_about
- );
- $object->create;
- $object->id; # returns the object's ID in FluidDB 
- 
- # get object by ID, optionally fetching about
- $object = Net::FluidDB::Object->get($fdb, $object_id, about => 1);
-
- # namespaces, tags, and users have objects
- $ns->object_id # a UUID
- $ns->object    # lazy loaded
-
- # --- Tags -------------------------------------
-
- # create tags
- $tag = Net::FluidDB::Tag->new(
-    fdb         => $fdb,
-    description => $description,
-    indexed     => 1,
-    path        => $path
- );
- $tag->create;
- $tag->namespace; # lazy loaded
-
- # get tag by path, optionally fetching descrition
- $tag = Net::FluidDB::Tag->get($fdb, $tag_path, description => 1);
- 
- # tag objects using an existing tag path
- $object->tag("fxn/rating", 10);
- 
-  # get a tag's value on an object by tag path
- $object->tag("fxn/rating"); # => 10
- 
- # tag objects using an existing tag object
- $object->tag($tag, "foo");
- 
- # get a tag's value on an object by tag object
- $object->tag($tag); # => "foo"
- 
- # sets of strings are passed as arrayrefs of strings, note in the
- # example we may get the elements back in different order, that's
- # because we store and retrieve sets, not ordered collections
- $object->tag($tag, ["a", "b", "c"]);
- $object->value($tag); # => ["c", "a", "b"] 
-
- # delete a tag
- $tag->delete;
-
- # --- Namespaces -------------------------------
-
- # create a namespace by path
- $ns = Net::FluidDB::Namespace->new(
-     fdb         => $fdb,
-     path        => $path,
-     description => $description
- );
- $ns->create;
- $ns->parent # lazy loaded
-
- # delete a namespace
- $ns->delete;
-
- # --- Policies ---------------------------------
-
- # raw getter
- $policy = Net::FluidDB::Policy->get($fdb, $username, 'namespaces', 'create');
- 
- # convenience getter
- $policy = Net::FluidDB::Policy->get_create_policy_for_namespaces($fdb, $username);
- 
- # checking a policy
- $policy->policy('open');
- $policy->exceptions(['test']);
- $policy->is_open;        # true
- $policy->is_closed;      # false
- $policy->has_exceptions; # true
- $policy->update;
- 
- # bulk operations
- Net::FluidDB::Policy->open_namespaces;
- Net::FluidDB::Policy->close_tags; # sets the exception list to [$self]
-
- # --- Permissions ------------------------------
-
- $perm = Net::FluidDB::Permission->get($fdb, 'namespaces', 'test', 'create');
- $perm->policy('open');
- $perm->exceptions(['test']);
- $perm->is_open;        # true
- $perm->is_closed;      # false
- $perm->has_exceptions; # true
- $perm->update;
-
- # --- User -------------------------------------
- 
- $user = Net::FluidDB::User->get($fdb, 'test');
- $user->username # => 'test'
 
 =head1 DESCRIPTION
 
 Net::FluidDB provides an interface to the FluidDB API.
 
-FluidDB's tagline is "a database with the heart of a wiki". It was launched
-just a few days ago. Check these pages to know about FluidDB:
+The documentation of Net::FluidDB does not explain FluidDB, though there are
+links to relevant pages in the documentation of each class.
 
-=over 4
+If you want to get familiar with FluidDB please check these pages:
 
-=item * FluidDB Documentation: L<http://doc.fluidinfo.com/fluidDB/>
+=over
 
-=item * FluidDB Essence blog entries: L<http://blogs.fluidinfo.com/fluidDB/category/essence/> 
+=item FluidDB high-level description
 
-=item * FluidDB API: L<http://api.fluidinfo.com/fluidDB/api/*/*/*>
+L<http://doc.fluidinfo.com/fluidDB/>
 
-=back
+=item FluidDB API documentation
 
-The design goal of Net::FluidDB is to offer a complete OO model for
-FluidDB with a convenience layer on top of it. 
+L<http://doc.fluidinfo.com/fluidDB/api/>
 
+=item FluidDB API specification
 
-=head1 ALPHA VERSION & WORK IN PROGRESS
+L<http://api.fluidinfo.com/fluidDB/api/*/*/*>
 
-Net::FluidDB is in a very alpha stage:
+=item FluidDB Essence blog posts
 
-=over 4
+L<http://blogs.fluidinfo.com/fluidDB/category/essence/> 
 
-=item * The FluidDB API is partially implemented.
+=head1 BETA VERSION
+
+Net::FluidDB is in beta stage. A beta in terms of interface mostly, the entire
+API is implemented except for tag values (see below). The module has good test
+coverage (~1700 tests in the full suite), and is well-documented.
+
+It is a beta because:
+
+=over
 
 =item * The overall interface is taking shape. I consider the basis to be there,
-but while in alpha the API may change.
+but I may still fine-tune some detail. I may still do backward-incompatible modifications,
+though I don't expect them to be anything but minor at this point.
 
 =item * In particular, since FluidDB is new usage patterns have yet to arise.
 They may influence the design of the interface.
 
+=item * Tagging with anything but a native FluidDB type is unsupported. The very
+API in FluidDB is gonna be revised soon on this point so I am waiting.
+
 =item * As of this version calls to FluidDB return a status flag. If there was
 any failure the module only prints the response to STDERR and returns false.
 
-=item * The module is underdocumented, to use a generous adjective :-).
+=back
+
+Forthcoming versions will address those points.
+
+=head1 Class Methods
+
+=over
+
+=item Net::FluidDB->new(%attrs)
+
+Returns an object for communicating with FluidDB.
+
+This is a wrapper around L<LWP::UserAgent> and does not validate
+credentials in the very constructor. If they are wrong requests
+will fail when performed.
+
+Attributes and options are:
+
+=over
+
+=item username
+
+Your username in FluidDB. If not present uses the value of the
+environment variable FLUIDDB_USERNAME.
+
+=item password
+
+Your password in FluidDB. If not present uses the value of the
+environment variable FLUIDDB_PASSWORD.
+
+=item protocol
+
+Either 'HTTP' or 'HTTPS'. Defaults to 'HTTP'.
+
+=item host
+
+The FluidDB host. Defaults to I<fluiddb.fluidinfo.com>.
+
+=item trace_http_requests
+
+A flag, logs all HTTP requests if true.
+
+=item trace_http_responses
+
+A flag, logs all HTTP responses if true.
+
+=item trace_http
+
+A flag, logs all HTTP requests and responses if true. (Shorthand for
+enabling the two above.)
+
+=back 
+
+=item Net::FluidDB->new_for_testing
+
+Returns a C<Net::FluidDB> instance pointing to the sandbox with
+"test"/"test". The host of the sandbox can be checked in the package
+variable C<$Net::FluidDB::SANDBOX_HOST>.
 
 =back
 
+=head1 Instance Methods
+
+=over
+
+=item $fdb->username
+
+=item $fdb->username($username)
+
+Gets/sets the username.
+
+=item $fdb->password
+
+=item $fdb->password($password)
+
+Gets/sets the password.
+
+=item $fdb->protocol
+
+=item $fdb->protocol($protocol)
+
+Gets/sets the protocol, either 'HTTP' or 'HTTPS'.
+
+=item $fdb->ua
+
+Returns the instance of L<LWP::UserAgent> used to communicate with FluidDB.
+
+=item $fdb->user
+
+Returns the user on behalf of whom fdb is doing calls. This attribute
+is lazy loaded. 
+
+=back
 
 =head1 AUTHOR
 
 Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
-
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -27,7 +27,7 @@ sub create {
 
 sub get {
     my ($class, $fdb, $id, %opts) = @_;
-    
+
     $opts{showAbout} = 1 if delete $opts{about};
     $fdb->get(
         path       => $class->abs_path('objects', $id),
@@ -47,6 +47,21 @@ sub get {
 sub get_by_about {
     my ($class, $fdb, $about) = @_;
     # TODO: implement it
+}
+
+sub search {
+    my ($class, $fdb, $query) = @_;
+
+    my %params = (query => $query);
+    $fdb->get(
+        path       => '/objects',
+        query      => \%params,
+        headers    => $fdb->accept_header_for_json,
+        on_success => sub {
+            my $response = shift;
+            @{decode_json($response->content)->{ids}};
+        }
+    );
 }
 
 sub tag {
@@ -103,3 +118,175 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=head1 NAME
+
+Net::FluidDB::Object - FluidDB objects
+
+=head1 SYNOPSIS
+
+ use Net::FluidDB::Object;
+
+ # create, with optional about
+ $object = Net::FluidDB::Object->new(
+     fdb   => $fdb,
+     about => $unique_about
+ );
+ $object->create;
+ $object->id; # returns the object's ID in FluidDB 
+ 
+ # get by ID, optionally fetching about
+ $object = Net::FluidDB::Object->get($fdb, $object_id, about => 1);
+
+ # search
+ @ids = Net::FluidDB::Object->search($fdb, "has fxn/rating");
+ 
+=head1 DESCRIPTION
+
+Net::FluidDB::Object models FluidDB objects.
+
+=head1 USAGE
+
+=head2 Inheritance
+
+C<Net::FluidDB::Object> is a subclass of L<Net::FluidDB::Base>.
+
+=head2 Class methods
+
+=over
+
+=item Net::FluidDB::Object->new(%attrs)
+
+Constructs a new object. The constructor accepts these parameters:
+
+=over
+
+=item fdb (required)
+
+An instance of Net::FluidDB.
+
+=item about (optional)
+
+A string, if any.
+
+=back
+
+This constructor is only useful for creating new objects in FluidDB.
+Already existing objects are fetched with C<get>.
+
+=item Net::FluidDB::Object->get($fdb, $id, %opts)
+
+Retrieves the object with ID C<$id> from FluidDB. Options are:
+
+=over
+
+=item about (optional, default false)
+
+Tells C<get> whether you want to get the about attribute of the object.
+
+If about is not fetched C<has_about> will be false even if the object
+has an about attribute in FluidDB.
+
+=back
+
+=item Net::FluidDB::Object->search($fdb, $query)
+
+Performs the query C<$query> and returns a (possibly empty) array of strings with
+the IDs of the macthing objects.
+
+=back
+
+=head2 Instance Methods
+
+=over
+
+=item $object->create
+
+Creates the object in FluidDB.
+
+=item $object->id
+
+Returns the UUID of the object, or C<undef> if it is new.
+
+=item $object->has_id
+
+Predicate to test whether the object has an ID.
+
+=item $object->about
+
+=item $object->about($about)
+
+Gets/sets the about attribute. About can't be modified in existing
+objects, the setter is only useful for new objects.
+
+Note that you need to set the C<about> flag when you fetch an object
+for this attribute to be initialized.
+
+=item $object->has_about
+
+Says whether the object has an about attribute.
+
+Note that you need to set the C<about> flag when you fetch an object
+for this attribute to be initialized.
+
+=item $object->tag_paths
+
+Returns the paths of the existing tags on the object as a (possibly
+empty) arrayref of strings.
+
+=item $object->tag($tag_or_tag_path, $value)
+
+B<This interface is subject to revision>.
+
+Tags an object. You can pass either a C<Tag> instance or a tag path in
+the first argument.  By now C<$value> must be any of the primitive
+FluidDB types integer, float, string, or set of strings (represented
+as arrayref of strings). But this could change.
+
+=item $object->value($tag_or_tag_path)
+
+B<This interface is subject to revision>.
+
+Gets the value of a tag on an object. You can refer to it either with a C<Tag> object
+or a tag path. By now it returns a scalar of any of the primitive FluidDB types
+integer, float, string, or set of strings (represented as arrayref of strings). But
+this could change.
+
+=back
+
+=head1 FLUIDDB DOCUMENTATION
+
+=over
+
+=item FluidDB high-level description
+
+L<http://doc.fluidinfo.com/fluidDB/objects.html>
+
+=item FluidDB API documentation
+
+L<http://doc.fluidinfo.com/fluidDB/api/objects.html>
+
+=item FluidDB API specification
+
+L<http://api.fluidinfo.com/fluidDB/api/*/objects/*>
+
+=back
+
+=head1 AUTHOR
+
+Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
+
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 Xavier Noria
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
+
+=cut
