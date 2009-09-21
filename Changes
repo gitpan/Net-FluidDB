@@ -1,5 +1,18 @@
 Revision history for Net-FluidDB
 
+0.05    2009-09-21
+        * Speaks the API released today in the sandbox
+        * Implements tagging objects with undef
+        * Documents a couple of tips related to tagging with numbers and strings
+        * All JSON::XS stuff has been factored out up to Base.pm
+        * The new Moose role Net::FluidDB::HasPath provides stuff related to
+          names and paths which is common to tags and namespaces
+        * Object creation without about tag sends no payload
+        * When a request fails now we print response headers to STDERR, with
+          the upgrade error data comes there
+        * When an object is tagged, the corresponding path is added to its tag_paths
+          unless present. (Reported by JJ Merelo.)
+
 0.04    2009-09-18
         * Now marked as beta
         * Complete FluidDB API coverage (except for non-native tag values)

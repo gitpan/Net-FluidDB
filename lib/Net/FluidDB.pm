@@ -4,12 +4,11 @@ use Moose;
 use LWP::UserAgent;
 use HTTP::Request;
 use URI;
-use JSON::XS;
 
 use Net::FluidDB::Object;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.04';
+our $VERSION           = '0.05';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -78,7 +77,7 @@ sub request {
             $request->header($header => $value);
         }
     }
-    $request->content($opts{payload}) if exists $opts{payload};
+    $request->content($opts{payload}) if defined $opts{payload};
 
     my $response = $self->ua->request($request);
     if ($response->is_success) {
@@ -91,7 +90,7 @@ sub request {
         if (exists $opts{on_failure}) {
             $opts{on_failure}->($response);
         } else {
-            print STDERR $response->content, "\n";
+            print STDERR $response->headers_as_string;
             0;
         }        
     }
@@ -203,7 +202,7 @@ They may influence the design of the interface.
 API in FluidDB is gonna be revised soon on this point so I am waiting.
 
 =item * As of this version calls to FluidDB return a status flag. If there was
-any failure the module only prints the response to STDERR and returns false.
+any failure the module only prints the response headers to STDERR and returns false.
 
 =back
 

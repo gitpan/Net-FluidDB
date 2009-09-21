@@ -37,4 +37,24 @@ $object2 = Net::FluidDB::Object->get($fdb, $object->id);
 ok $object2->id eq $object->id;
 ok !$object2->has_about;
 
+# Now we are gonna do some variations just in case, but the proper place to
+# test them is the suite of the Tag class.
+
+# is_tag_path_present
+$object = Net::FluidDB::Object->new(fdb => $fdb);
+ok !$object->is_tag_path_present('fxn/rating');
+ok !$object->is_tag_path_present('');
+
+$object->_set_tag_paths(['fxn/rating']);
+ok $object->is_tag_path_present('fxn/rating');
+ok $object->is_tag_path_present('FxN/rating');
+
+$object->_set_tag_paths(['fxn/rating', 'fxn/was-here']);
+ok $object->is_tag_path_present('fxn/rating');
+ok $object->is_tag_path_present('fxn/was-here');
+ok $object->is_tag_path_present('FXN/rating');
+ok $object->is_tag_path_present('FXN/was-here');
+ok !$object->is_tag_path_present('fxn/RATING');
+ok !$object->is_tag_path_present('fxn/WAS-HERE');
+
 done_testing;

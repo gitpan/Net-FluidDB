@@ -2,8 +2,6 @@ package Net::FluidDB::Policy;
 use Moose;
 extends 'Net::FluidDB::ACL';
 
-use JSON::XS;
-
 has username => (is => 'ro', isa => 'Str');
 has category => (is => 'ro', isa => 'Str');
 has action   => (is => 'ro', isa => 'Str');
@@ -17,7 +15,7 @@ sub get {
         headers    => $fdb->accept_header_for_json,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);
+            my $h = $class->json->decode($response->content);
             $class->new(
                 fdb      => $fdb,
                 username => $username,
@@ -32,7 +30,7 @@ sub get {
 sub update {
     my $self = shift;
 
-    my $payload = encode_json({policy => $self->policy, exceptions => $self->exceptions});
+    my $payload = $self->json->encode({policy => $self->policy, exceptions => $self->exceptions});
     $self->fdb->put(
         path    => $self->abs_path('policies', $self->username, $self->category, $self->action),
         headers => $self->fdb->headers_for_json,

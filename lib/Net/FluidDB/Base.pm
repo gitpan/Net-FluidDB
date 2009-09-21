@@ -1,9 +1,13 @@
 package Net::FluidDB::Base;
 use Moose;
 
+use JSON::XS;
 use Carp;
 
-has fdb => (is => 'ro', isa => 'Net::FluidDB', required => 1);
+use MooseX::ClassAttribute;
+class_has json => (is => 'ro', default => sub { JSON::XS->new->utf8->allow_nonref });
+
+has fdb  => (is => 'ro', isa => 'Net::FluidDB', required => 1);
 
 sub create {
     shift->croak_about("create"); 

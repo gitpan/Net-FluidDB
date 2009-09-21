@@ -3,15 +3,12 @@ use Moose;
 extends 'Net::FluidDB::Base';
 
 use Net::FluidDB::Namespace;
-use JSON::XS;
-
-with 'Net::FluidDB::HasObject';
 
 has description => (is => 'rw', isa => 'Str');
 has indexed     => (is => 'ro', isa => 'Bool', required => 1);
 has namespace   => (is => 'ro', isa => 'Net::FluidDB::Namespace', lazy_build => 1);
-has name        => (is => 'ro', isa => 'Str', lazy_build => 1);
-has path        => (is => 'ro', isa => 'Str', lazy_build => 1);
+
+with 'Net::FluidDB::HasObject', 'Net::FluidDB::HasPath';
 
 our %FULL_GET_FLAGS = (
     description => 1
@@ -22,46 +19,31 @@ sub _build_namespace {
     my $self = shift;
     Net::FluidDB::Namespace->get(
         $self->fdb,
-        $self->path_of_namespace,
+        $self->path_of_parent,
         %Net::FluidDB::Namespace::FULL_GET_FLAGS
     );
 }
 
-sub _build_name {
-    # TODO: add croaks for dependencies
-    my $self = shift;
-    my @names = split "/", $self->path;
-    $names[-1];
-}
-
-sub _build_path {
-    # TODO: add croaks for dependencies
-    my $self = shift;
-    $self->namespace->path . '/' . $self->name;
-}
-
-sub path_of_namespace {
-   my $self = shift;
-   my @names = split "/", $self->path;
-   join "/", @names[0 .. $#names-1];
+sub parent {
+    shift->namespace;
 }
 
 sub create {
     my $self = shift;
     
-    my $payload = encode_json({
+    my $payload = $self->json->encode({
         description => $self->description,
         indexed     => $self->indexed,
         name        => $self->name
     });
     
     $self->fdb->post(
-        path       => $self->abs_path('tags', $self->path_of_namespace),
+        path       => $self->abs_path('tags', $self->path_of_parent),
         headers    => $self->fdb->headers_for_json,
         payload    => $payload,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);
+            my $h = $self->json->decode($response->content);
             $self->_set_object_id($h->{id});            
         }
     );
@@ -77,7 +59,7 @@ sub get {
         headers    => $fdb->accept_header_for_json,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);
+            my $h = $class->json->decode($response->content);
             my $t = $class->new(fdb => $fdb, path => $path, %$h);
             $t->_set_object_id($h->{id});
             $t;            
@@ -88,7 +70,7 @@ sub get {
 sub update {
     my $self = shift;
 
-    my $payload = encode_json({description => $self->description});
+    my $payload = $self->json->encode({description => $self->description});
     $self->fdb->put(
         path    => $self->abs_path('tags', $self->path),
         headers => $self->fdb->headers_for_json,
@@ -149,7 +131,7 @@ C<Net::FluidDB::Tag> is a subclass of L<Net::FluidDB::Base>.
 
 =head2 Roles
 
-C<Net::FluidDB::Tag> consumes the role L<Net::FluidDB::HasObject>.
+C<Net::FluidDB::Tag> consumes the roles L<Net::FluidDB::HasObject>, and L<Net::FluidDB::HasPath>.
 
 =head2 Class methods
 
@@ -210,6 +192,11 @@ Retrieves the tag with path C<$path> from FluidDB. Options are:
 Tells C<get> whether you want to fetch the description.
 
 =back
+
+=item Net::FluidDB::Tag->equal_paths($path1, $path2)
+
+Determines whether C<$path1> and C<$path2> are the same in FluidDB. The basic
+rule is that the username fragment is case-insensitive, and the rest is not.
 
 =back
 

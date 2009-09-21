@@ -42,7 +42,7 @@ ok $fdb->password eq 'p';
 
 # -----------------------------------------------------------------------------
 
-$ENV{FLUIDDB_USERNAME}     = 'eu';
+$ENV{FLUIDDB_USERNAME} = 'eu';
 $ENV{FLUIDDB_PASSWORD} = 'ep';
 
 $fdb = Net::FluidDB->new;

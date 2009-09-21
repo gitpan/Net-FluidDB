@@ -1,8 +1,8 @@
 package Net::FluidDB::ACL;
 use Moose;
-use MooseX::ClassAttribute;
 extends 'Net::FluidDB::Base';
 
+use MooseX::ClassAttribute;
 class_has Actions => (
     is => 'ro',
     isa => 'HashRef[ArrayRef[Str]]',

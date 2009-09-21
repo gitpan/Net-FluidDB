@@ -2,7 +2,7 @@ package Net::FluidDB::Object;
 use Moose;
 extends 'Net::FluidDB::Base';
 
-use JSON::XS;
+use Net::FluidDB::Tag;
 use Net::FluidDB::Value;
 
 has id        => (is => 'ro', isa => 'Str', writer => '_set_id', predicate => 'has_id');
@@ -12,14 +12,14 @@ has tag_paths => (is => 'ro', isa => 'ArrayRef[Str]', writer => '_set_tag_paths'
 sub create {
     my $self = shift;
 
-    my $payload = encode_json($self->has_about ? {about => $self->about} : {});
+    my $payload = $self->has_about ? $self->json->encode({about => $self->about}) : undef;
     $self->fdb->post(
         path       => $self->abs_path('objects'),
         headers    => $self->fdb->headers_for_json,
         payload    => $payload,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);        
+            my $h = $self->json->decode($response->content);        
             $self->_set_id($h->{id});
         }
     );
@@ -35,7 +35,7 @@ sub get {
         headers    => $fdb->accept_header_for_json,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);
+            my $h = $class->json->decode($response->content);
             my $o = $class->new(fdb => $fdb, %$h);
             $o->_set_id($id);
             $o->_set_tag_paths($h->{tagPaths});
@@ -59,7 +59,7 @@ sub search {
         headers    => $fdb->accept_header_for_json,
         on_success => sub {
             my $response = shift;
-            @{decode_json($response->content)->{ids}};
+            @{$class->json->decode($response->content)->{ids}};
         }
     );
 }
@@ -68,28 +68,34 @@ sub tag {
     my ($self, $tag_or_tag_path, @rest) = @_;
 
     my $tag_path = $self->get_tag_path_from_tag_or_tag_path($tag_or_tag_path);
+    my $content_type = $Net::FluidDB::Value::CONTENT_TYPE;
     my $payload;
 
     if (@rest == 0) {
-        # TODO: tagging with no value
+        $payload = $self->json->encode(undef);
     } elsif (@rest == 1) {
         my $value = shift @rest;
         if (ref($value) && ref($value) ne 'ARRAY') {
-            $payload = $value->as_json;
+            # TODO
         } else {
-            $payload = Net::FluidDB::Value->new(value => $value)->as_json;
+            $payload = $self->json->encode($value);
         }
     } else {
         my %opts = @rest;
         # TODO: supported keys are file, format, etc. explore this interface
     }
     
-    $self->fdb->put(
+    my $status = $self->fdb->put(
         path    => $self->abs_path('objects', $self->id, $tag_path),
-        query   => {format => 'json'},
-        headers => $self->fdb->content_type_header_for_json,
+        headers => {'Content-Type' => $content_type},
         payload => $payload
     );
+
+    if ($status && !$self->is_tag_path_present($tag_path)) {
+        push @{$self->tag_paths}, $tag_path;
+    }
+
+    $status;
 }
 
 sub value {
@@ -97,14 +103,11 @@ sub value {
     
     my $tag_path = $self->get_tag_path_from_tag_or_tag_path($tag_or_tag_path);
     $self->fdb->get(
-        path    => $self->abs_path('objects', $self->id, $tag_path),
-        query   => {format => 'json'},
-        headers => $self->fdb->accept_header_for_json,
+        path => $self->abs_path('objects', $self->id, $tag_path),
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);
-            my $v = Net::FluidDB::Value->new(%$h);
-            $v->has_value_encoding || $v->has_value_type ? $v : $v->value;
+            $self->json->decode($response->content);
+            # TODO handle more Content Types
         }
     );
 }
@@ -112,6 +115,15 @@ sub value {
 sub get_tag_path_from_tag_or_tag_path {
     my ($self, $tag_or_tag_path) = @_;
     ref($tag_or_tag_path) ? $tag_or_tag_path->path : $tag_or_tag_path;
+}
+
+sub is_tag_path_present {
+    my ($self, $tag_path) = @_;
+
+    foreach my $known_tag_path (@{$self->tag_paths}) {
+        return 1 if Net::FluidDB::HasPath->equal_paths($tag_path, $known_tag_path);
+    }
+    return 0;
 }
 
 no Moose;
@@ -244,6 +256,17 @@ Tags an object. You can pass either a C<Tag> instance or a tag path in
 the first argument.  By now C<$value> must be any of the primitive
 FluidDB types integer, float, string, or set of strings (represented
 as arrayref of strings). But this could change.
+
+Please ensure the type of the scalar matches the FluidDB type. Either
+numify
+
+    $object->tag($tag_or_tag_path, $value + 0);
+
+or stringify:
+
+    $object->tag($tag_or_tag_path, "$value");
+
+as needed.
 
 =item $object->value($tag_or_tag_path)
 

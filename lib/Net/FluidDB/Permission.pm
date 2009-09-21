@@ -2,8 +2,6 @@ package Net::FluidDB::Permission;
 use Moose;
 extends 'Net::FluidDB::ACL';
 
-use JSON::XS;
-
 has category => (is => 'ro', isa => 'Str');
 has path     => (is => 'ro', isa => 'Str');
 has action   => (is => 'ro', isa => 'Str');
@@ -17,7 +15,7 @@ sub get {
         headers    => $fdb->accept_header_for_json,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);
+            my $h = $class->json->decode($response->content);
             $class->new(
                 fdb      => $fdb,
                 category => $category,
@@ -32,7 +30,7 @@ sub get {
 sub update {
     my $self = shift;
 
-    my $payload = encode_json({policy => $self->policy, exceptions => $self->exceptions});
+    my $payload = $self->json->encode({policy => $self->policy, exceptions => $self->exceptions});
     $self->fdb->put(
         path    => $self->abs_path('permissions', $self->category, $self->path),
         query   => { action => $self->action },
@@ -50,7 +48,7 @@ __END__
 
 =head1 NAME
 
-Net::FluidDB::Policy - FluidDB permissions
+Net::FluidDB::Permission - FluidDB permissions
 
 =head1 SYNOPSIS
 

@@ -7,6 +7,8 @@ has value          => (is => 'rw', isa => 'Any', required => 1);
 has value_encoding => (is => 'rw', isa => 'Str', predicate => 'has_value_encoding');
 has value_type     => (is => 'rw', isa => 'Str', predicate => 'has_value_type');
 
+our $CONTENT_TYPE = 'application/vnd.fluiddb.value+json';
+
 sub as_json {
     my $self = shift;
     my %h = ();

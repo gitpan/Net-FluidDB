@@ -29,7 +29,7 @@ ok $tag->create;
 ok $tag->has_object_id;
 ok $tag->object->id eq $tag->object_id;
 ok $tag->name eq $name;
-ok $tag->path_of_namespace eq $fdb->username;
+ok $tag->path_of_parent eq $fdb->username;
 ok $tag->namespace->name eq $fdb->username;
 ok $tag->path eq $path;
 
@@ -39,7 +39,7 @@ ok $tag2->description eq $tag->description;
 ok $tag2->indexed;
 ok $tag2->object_id eq $tag->object_id;
 ok $tag2->name eq $tag->name;
-ok $tag2->path_of_namespace eq $tag->path_of_namespace;
+ok $tag2->path_of_parent eq $tag->path_of_parent;
 ok $tag2->namespace->name eq $tag->namespace->name;
 ok $tag2->path eq $tag->path;
 
@@ -55,4 +55,3 @@ ok $tag2->description eq $tag->description;
 ok $tag->delete;
 
 done_testing;
-

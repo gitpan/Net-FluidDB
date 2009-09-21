@@ -2,39 +2,18 @@ package Net::FluidDB::Namespace;
 use Moose;
 extends 'Net::FluidDB::Base';
 
-use JSON::XS;
-
-with 'Net::FluidDB::HasObject';
-
 has description     => (is => 'rw', isa => 'Str');
-has parent          => (is => 'ro', isa => 'Maybe[Net::FluidDB::Namespace]', lazy_build => 1); 
-has name            => (is => 'ro', isa => 'Str', lazy_build => 1);
-has path            => (is => 'ro', isa => 'Str', lazy_build => 1);
+has parent          => (is => 'ro', isa => 'Maybe[Net::FluidDB::Namespace]', lazy_build => 1);
 has namespace_names => (is => 'ro', isa => 'ArrayRef[Str]', writer => '_set_namespace_names');
 has tag_names       => (is => 'ro', isa => 'ArrayRef[Str]', writer => '_set_tag_names');
+
+with 'Net::FluidDB::HasObject', 'Net::FluidDB::HasPath';
 
 our %FULL_GET_FLAGS = (
     description     => 1,
     namespace_names => 1,
     tag_names       => 1
 );
-
-sub _build_name {
-    # TODO: add croaks for dependencies
-    my $self = shift;
-    my @names = split "/", $self->path;
-    $names[-1];
-}
-
-sub _build_path {
-    # TODO: add croaks for dependencies
-    my $self = shift;
-    if ($self->parent) {
-        $self->parent->path . '/' . $self->name;
-    } else {
-        $self->name;
-    }
-}
 
 sub _build_parent {
     # TODO: add croaks for dependencies
@@ -46,24 +25,18 @@ sub _build_parent {
     }
 }
 
-sub path_of_parent {
-   my $self = shift;
-   my @names = split "/", $self->path;
-   join "/", @names[0 .. $#names-1];
-}
-
 # Normal usage is to set description and path of self.
 sub create {
     my $self = shift;
 
-    my $payload = encode_json({description => $self->description, name => $self->name});
+    my $payload = $self->json->encode({description => $self->description, name => $self->name});
     $self->fdb->post(
         path       => $self->abs_path('namespaces', $self->path_of_parent),
         headers    => $self->fdb->headers_for_json,
         payload    => $payload,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);        
+            my $h = $self->json->decode($response->content);
             $self->_set_object_id($h->{id});
         }
     );
@@ -82,7 +55,7 @@ sub get {
         headers    => $fdb->accept_header_for_json,
         on_success => sub {
             my $response = shift;
-            my $h = decode_json($response->content);
+            my $h = $class->json->decode($response->content);
             my $ns = $class->new(fdb => $fdb, path => $path);
             $ns->_set_object_id($h->{id});
             $ns->description($h->{description})             if $opts{returnDescription};
@@ -97,7 +70,7 @@ sub get {
 sub update {
     my $self = shift;
 
-    my $payload = encode_json({description => $self->description});
+    my $payload = $self->json->encode({description => $self->description});
     $self->fdb->put(
         path    => $self->abs_path('namespaces', $self->path),
         headers => $self->fdb->headers_for_json,
@@ -157,7 +130,7 @@ C<Net::FluidDB::Namespace> is a subclass of L<Net::FluidDB::Base>.
 
 =head2 Roles
 
-C<Net::FluidDB::Namespace> consumes the role L<Net::FluidDB::HasObject>.
+C<Net::FluidDB::Namespace> consumes the roles L<Net::FluidDB::HasObject>, and L<Net::FluidDB::HasPath>.
 
 =head2 Class methods
 
