@@ -1,5 +1,10 @@
 Revision history for Net-FluidDB
 
+0.06    2009-09-25
+        * Sends flags to FluidDB as proper booleans, thus playing nice with
+          the revision deployed today.
+        * More tests.
+
 0.05    2009-09-21
         * Speaks the API released today in the sandbox
         * Implements tagging objects with undef

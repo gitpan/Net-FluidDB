@@ -8,7 +8,7 @@ use URI;
 use Net::FluidDB::Object;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.05';
+our $VERSION           = '0.06';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';

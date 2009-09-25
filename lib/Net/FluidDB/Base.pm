@@ -41,6 +41,19 @@ sub abs_path {
     $path;
 }
 
+sub true {
+    shift->as_json_boolean(1);
+}
+
+sub false {
+    shift->as_json_boolean(0);
+}
+
+sub as_json_boolean {
+    my ($receiver, $flag) = @_;
+    $flag ? JSON::XS::true : JSON::XS::false;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

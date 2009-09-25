@@ -28,7 +28,7 @@ sub create {
 sub get {
     my ($class, $fdb, $id, %opts) = @_;
 
-    $opts{showAbout} = 1 if delete $opts{about};
+    $opts{showAbout} = $class->true if delete $opts{about};
     $fdb->get(
         path       => $class->abs_path('objects', $id),
         query      => \%opts,

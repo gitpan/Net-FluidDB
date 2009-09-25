@@ -33,7 +33,7 @@ sub create {
     
     my $payload = $self->json->encode({
         description => $self->description,
-        indexed     => $self->indexed,
+        indexed     => $self->as_json_boolean($self->indexed),
         name        => $self->name
     });
     
@@ -52,7 +52,7 @@ sub create {
 sub get {
     my ($class, $fdb, $path, %opts) = @_;
 
-    $opts{returnDescription} = 1 if delete $opts{description};
+    $opts{returnDescription} = $class->true if delete $opts{description};
     $fdb->get(
         path       => $class->abs_path('tags', $path),
         query      => \%opts,

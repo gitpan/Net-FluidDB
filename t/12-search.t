@@ -24,31 +24,32 @@ my $tag = Net::FluidDB::Tag->new(
 );
 ok $tag->create;
 
+my @object_ids = ();
 for (my $i = -3; $i <= 3; ++$i){
   my $object = Net::FluidDB::Object->new(fdb => $fdb);
   ok $object->create;
   ok $object->tag($tag, $i);
+  push @object_ids, $object->id;
 }
 
 my @ids;
 
 @ids = Net::FluidDB::Object->search($fdb, "has $path");
-ok @ids == 7;
-ok !ref for @ids;
+ok_sets_cmp \@ids, \@object_ids;
 
 @ids = Net::FluidDB::Object->search($fdb, "$path > -3 OR $path < 3");
-ok @ids == 7;
+ok_sets_cmp \@ids, \@object_ids;
 
 @ids = Net::FluidDB::Object->search($fdb, "$path > 0");
-ok @ids == 3;
+ok_sets_cmp \@ids, [ @object_ids[4 .. $#object_ids] ];
 
 @ids = Net::FluidDB::Object->search($fdb, "$path = 0");
-ok @ids == 1;
+ok_sets_cmp \@ids, [ $object_ids[3] ];
 
 @ids = Net::FluidDB::Object->search($fdb, "$path > 3");
-ok @ids == 0;
+ok_sets_cmp \@ids, [];
 
 @ids = Net::FluidDB::Object->search($fdb, "$path < -3");
-ok @ids == 0;
+ok_sets_cmp \@ids, [];
 
 done_testing;

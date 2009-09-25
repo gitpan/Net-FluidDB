@@ -45,9 +45,9 @@ sub create {
 sub get {
     my ($class, $fdb, $path, %opts) = @_;
 
-    $opts{returnDescription} = 1 if delete $opts{description};
-    $opts{returnNamespaces}  = 1 if delete $opts{namespace_names};
-    $opts{returnTags}        = 1 if delete $opts{tag_names};
+    $opts{returnDescription} = $class->true if delete $opts{description};
+    $opts{returnNamespaces}  = $class->true if delete $opts{namespace_names};
+    $opts{returnTags}        = $class->true if delete $opts{tag_names};
     
     $fdb->get(
         path       => $class->abs_path('namespaces', $path),
