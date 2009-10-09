@@ -71,7 +71,7 @@ Net::FluidDB::Base - The base class of all remote resources
 
 =head1 DESCRIPTION
 
-Net::FluidDB::Base is the root class in the hierarchy of remote resources.
+C<Net::FluidDB::Base> is the root class in the hierarchy of remote resources.
 They need an instance of L<Net::FluidDB> to be able to communicate with
 FluidDB.
 
@@ -92,7 +92,7 @@ which comes from this class:
 
 =item $base->fdb
 
-Returns the L<Net::FluidDB> instance of used to communicate with FluidDB.
+Returns the L<Net::FluidDB> instance used to communicate with FluidDB.
 
 =back
 

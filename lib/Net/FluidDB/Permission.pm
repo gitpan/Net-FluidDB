@@ -66,7 +66,7 @@ Net::FluidDB::Permission - FluidDB permissions
 
 =head1 DESCRIPTION
 
-Net::FluidDB::Permission models FluidDB permissions.
+C<Net::FluidDB::Permission> models FluidDB permissions.
 
 =head1 USAGE
 

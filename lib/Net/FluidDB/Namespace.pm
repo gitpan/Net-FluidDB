@@ -120,7 +120,7 @@ Net::FluidDB::Namespace - FluidDB namespaces
  
 =head1 DESCRIPTION
 
-Net::FluidDB::Namespace models FluidDB namespaces.
+C<Net::FluidDB::Namespace> models FluidDB namespaces.
 
 =head1 USAGE
 

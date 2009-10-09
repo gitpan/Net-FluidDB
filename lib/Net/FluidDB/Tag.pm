@@ -121,7 +121,7 @@ Net::FluidDB::Tag - FluidDB tags
  
 =head1 DESCRIPTION
 
-Net::FluidDB::Tag models FluidDB tags.
+C<Net::FluidDB::Tag> models FluidDB tags.
 
 =head1 USAGE
 

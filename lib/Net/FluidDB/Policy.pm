@@ -123,7 +123,7 @@ Net::FluidDB::Policy - FluidDB policies
 
 =head1 DESCRIPTION
 
-Net::FluidDB::Policy models FluidDB policies.
+C<Net::FluidDB::Policy> models FluidDB policies.
 
 =head1 USAGE
 

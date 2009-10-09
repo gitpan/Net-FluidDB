@@ -8,7 +8,7 @@ use URI;
 use Net::FluidDB::Object;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.06';
+our $VERSION           = '0.07';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -156,7 +156,7 @@ Net::FluidDB - A Perl interface to FluidDB
 
 =head1 DESCRIPTION
 
-Net::FluidDB provides an interface to the FluidDB API.
+C<Net::FluidDB> provides an interface to the FluidDB API.
 
 The documentation of Net::FluidDB does not explain FluidDB, though there are
 links to relevant pages in the documentation of each class.
@@ -181,34 +181,9 @@ L<http://api.fluidinfo.com/fluidDB/api/*/*/*>
 
 L<http://blogs.fluidinfo.com/fluidDB/category/essence/> 
 
-=head1 BETA VERSION
+=head1 USAGE
 
-Net::FluidDB is in beta stage. A beta in terms of interface mostly, the entire
-API is implemented except for tag values (see below). The module has good test
-coverage (~1700 tests in the full suite), and is well-documented.
-
-It is a beta because:
-
-=over
-
-=item * The overall interface is taking shape. I consider the basis to be there,
-but I may still fine-tune some detail. I may still do backward-incompatible modifications,
-though I don't expect them to be anything but minor at this point.
-
-=item * In particular, since FluidDB is new usage patterns have yet to arise.
-They may influence the design of the interface.
-
-=item * Tagging with anything but a native FluidDB type is unsupported. The very
-API in FluidDB is gonna be revised soon on this point so I am waiting.
-
-=item * As of this version calls to FluidDB return a status flag. If there was
-any failure the module only prints the response headers to STDERR and returns false.
-
-=back
-
-Forthcoming versions will address those points.
-
-=head1 Class Methods
+=head2 Class Methods
 
 =over
 

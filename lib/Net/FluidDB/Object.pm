@@ -2,8 +2,18 @@ package Net::FluidDB::Object;
 use Moose;
 extends 'Net::FluidDB::Base';
 
+use Carp;
+use Scalar::Util qw(blessed);
 use Net::FluidDB::Tag;
 use Net::FluidDB::Value;
+use Net::FluidDB::Value::Native;
+use Net::FluidDB::Value::NonNative;
+use Net::FluidDB::Value::Null;
+use Net::FluidDB::Value::Boolean;
+use Net::FluidDB::Value::Integer;
+use Net::FluidDB::Value::Float;
+use Net::FluidDB::Value::String;
+use Net::FluidDB::Value::Set;
 
 has id        => (is => 'ro', isa => 'Str', writer => '_set_id', predicate => 'has_id');
 has about     => (is => 'rw', isa => 'Str', predicate => 'has_about');
@@ -68,34 +78,97 @@ sub tag {
     my ($self, $tag_or_tag_path, @rest) = @_;
 
     my $tag_path = $self->get_tag_path_from_tag_or_tag_path($tag_or_tag_path);
-    my $content_type = $Net::FluidDB::Value::CONTENT_TYPE;
-    my $payload;
 
     if (@rest == 0) {
-        $payload = $self->json->encode(undef);
+        $self->tag_fdb_value_or_scalar($tag_path);
     } elsif (@rest == 1) {
-        my $value = shift @rest;
-        if (ref($value) && ref($value) ne 'ARRAY') {
-            # TODO
+        $self->tag_fdb_value_or_scalar($tag_path, @rest);
+    } elsif (@rest % 2 == 1) {
+        $self->tag_fdb_value_or_scalar_with_options($tag_path, @rest);
+    } else {
+        croak "don't know"
+    }
+}
+
+sub tag_fdb_value_or_scalar {
+    my ($self, $tag_path, $value) = @_;
+
+    if (defined $value) {
+        if (ref $value) {
+            if (ref $value eq 'ARRAY') {
+                $value = Net::FluidDB::Value::Set->new(value => $value);
+            } elsif (blessed $value && $value->isa('Net::FluidDB::Value')) {
+                # fine, do nothing
+            } else {
+                croak "$value is not undef nor a valid reference for tagging\n";
+            }
         } else {
-            $payload = $self->json->encode($value);
+            croak "$value is not undef nor a valid reference for tagging\n";
         }
     } else {
-        my %opts = @rest;
-        # TODO: supported keys are file, format, etc. explore this interface
+        $value = Net::FluidDB::Value::Null->new;
     }
+    $self->tag_fdb_value($tag_path, $value);
+}
+
+sub tag_fdb_value_or_scalar_with_options {
+    my ($self, $tag_path, $value, %opts) = @_;
+    
+    # It is OK to pass fdb_type AND mime_type as long as they match,
+    # an undocumented feature guided by the "croak only if necessary"
+    # principle.
+    if (exists $opts{fdb_type} && exists $opts{mime_type}) {
+        my $type = Net::FluidDB::Value::Native->type_from_alias($opts{fdb_type});
+        if ($opts{mime_type} ne $type->mime_type) {
+            croak <<MESSAGE;
+FluidDB has a custom MIME type for native values which is not $opts{mime_type}.
+You can leave that option out though, if fdb_type is present Net::FluidDB sets the
+correct MIME type for you.
+MESSAGE
+        }
+    }
+
+    # At this point we have either one of them, or both but equivalent. This allows
+    # us to branch in the following way.
+    #
+    # This chunk of code either leaves $value untouched, or reassigns to it according
+    # to %opts. Goal is to tag the object with whatever $value we have after it.
+    if ($opts{fdb_type}) {
+        my $type = Net::FluidDB::Value::Native->type_from_alias($opts{fdb_type});
+        if (blessed $value) {
+            if ($value->isa('Net::FluidDB::Value::Native')) {
+                # if fdb_type does not match perform a coercion, otherwise $value is fine as is
+                $value = $type->new(value => $value->value) unless $value->isa($type);
+            } else {
+                # whatever, the value class will come up with something from it
+                $value = $type->new(value => $value);
+            }
+        } else {
+            $value = $type->new(value => $value);
+        }
+    } elsif ($opts{mime_type}) {
+        $value = Net::FluidDB::Value::NonNative->new(value => $value, mime_type => $opts{mime_type});
+    } else {
+        croak "tagging with options requires either fdb_type (native values) or mime_type (non-native values)"
+    }
+
+    $self->tag_fdb_value($tag_path, $value);
+}
+
+sub tag_fdb_value {
+    my ($self, $tag_path, $value) = @_;
     
     my $status = $self->fdb->put(
         path    => $self->abs_path('objects', $self->id, $tag_path),
-        headers => {'Content-Type' => $content_type},
-        payload => $payload
+        headers => {'Content-Type' => $value->mime_type},
+        payload => $value->payload
     );
 
     if ($status && !$self->is_tag_path_present($tag_path)) {
         push @{$self->tag_paths}, $tag_path;
     }
 
-    $status;
+    $status;    
 }
 
 sub value {
@@ -106,8 +179,10 @@ sub value {
         path => $self->abs_path('objects', $self->id, $tag_path),
         on_success => sub {
             my $response = shift;
-            $self->json->decode($response->content);
-            # TODO handle more Content Types
+            Net::FluidDB::Value->new_from_mime_type_and_content(
+                $response->headers->header('Content-Type'),
+                $response->content
+            )
         }
     );
 }
@@ -152,12 +227,20 @@ Net::FluidDB::Object - FluidDB objects
  # get by ID, optionally fetching about
  $object = Net::FluidDB::Object->get($fdb, $object_id, about => 1);
 
+ # tag
+ $object->tag("fxn/likes");
+ $object->tag("fxn/rating", 10, fdb_type => 'integer');
+ $object->tag("fxn/avatar", $image, mime_type => 'image/png');
+
+ # retrieve a tag value
+ $value = $object->("fxn/rating");
+
  # search
  @ids = Net::FluidDB::Object->search($fdb, "has fxn/rating");
  
 =head1 DESCRIPTION
 
-Net::FluidDB::Object models FluidDB objects.
+C<Net::FluidDB::Object> models FluidDB objects.
 
 =head1 USAGE
 
@@ -248,34 +331,82 @@ for this attribute to be initialized.
 Returns the paths of the existing tags on the object as a (possibly
 empty) arrayref of strings.
 
-=item $object->tag($tag_or_tag_path, $value)
+=item $object->tag($tag_or_tag_path, $value, %options)
 
-B<This interface is subject to revision>.
+Tags an object.
 
-Tags an object. You can pass either a C<Tag> instance or a tag path in
-the first argument.  By now C<$value> must be any of the primitive
-FluidDB types integer, float, string, or set of strings (represented
-as arrayref of strings). But this could change.
+You can pass either a L<Net::FluidDB::Tag> instance instance or a tag path
+in the first argument. Tag values may be native or non-native.
 
-Please ensure the type of the scalar matches the FluidDB type. Either
-numify
+=over
 
-    $object->tag($tag_or_tag_path, $value + 0);
+=item Tagging with L<Net::FluidDB::Value>s
 
-or stringify:
+This method accepts L<Net::FluidDB::Value>s, in which case no options are
+needed, but offers a convenience interface to be able to work with plain
+scalars, see the next item.
 
-    $object->tag($tag_or_tag_path, "$value");
+=item Tagging with ordinary scalars
 
-as needed.
+Tagging with ordinary scalars has two interfaces, one for native values,
+and one for non-native values.
+
+=over
+
+=item Native values
+
+For native value you need to pass a C<fdb_type> option to
+indicate its FluidDB type. One of "null", "boolean", "integer", "float",
+"string", or "set".
+
+    $object->tag("fxn/rating", 10, fdb_type => 'integer');
+
+If C<$value> is C<undef> or an arrayref this is not required:
+
+    $object->tag("fxn/tags");                    # type null
+    $object->tag("fxn/tags", undef);             # type null
+    $object->tag("fxn/tags", ["perl", "moose"]); # type set
+
+=item Non-native values
+
+To tag with a non-native value you need to pass a C<mime_type> option with
+a suitable MIME type for it:
+
+    $object->tag("fxn/foaf", $foaf, mime_type => "application/rdf+xml");
+
+=back
+
+=back
 
 =item $object->value($tag_or_tag_path)
 
-B<This interface is subject to revision>.
+Gets the value of a tag on an object.
 
-Gets the value of a tag on an object. You can refer to it either with a C<Tag> object
-or a tag path. By now it returns a scalar of any of the primitive FluidDB types
-integer, float, string, or set of strings (represented as arrayref of strings). But
-this could change.
+You can refer to the tag either with a L<Net::FluidDB::Tag> instance or a tag path.
+
+The returned value is an instance of some child of L<Net::FluidDB::Value>. The
+C<value> method returns the actual scalar value:
+
+    $value = $object->value("fxn/rating");
+    print $value->value;
+
+This object may be inspected: Any value responds to
+
+    $value->is_native;
+    $value->is_non_native;
+
+Native values have predicates:
+
+    $value->is_null;
+    $value->is_boolean;
+    $value->is_integer;
+    $value->is_float;
+    $value->is_string;
+    $value->is_set;
+
+The MIME type of a non-native value is also available:
+
+    $value->mime_type;
 
 =back
 

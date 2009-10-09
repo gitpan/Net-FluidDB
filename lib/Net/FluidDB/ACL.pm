@@ -54,7 +54,7 @@ Net::FluidDB::ACL - A common ancestor for classes that provide an ACL
 
 =head1 DESCRIPTION
 
-Net::FluidDB::ACL is a parent class of L<Net::FluidDB::Policy> and
+C<Net::FluidDB::ACL> is a parent class of L<Net::FluidDB::Policy> and
 L<Net::FluidDB::Permission>.
 
 You don't usually need this class, only the interface its children inherit.

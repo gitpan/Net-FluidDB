@@ -1,5 +1,9 @@
 Revision history for Net-FluidDB
 
+0.07    2009-10-09
+        * No longer a beta.
+        * Full support for tagging.
+
 0.06    2009-09-25
         * Sends flags to FluidDB as proper booleans, thus playing nice with
           the revision deployed today.

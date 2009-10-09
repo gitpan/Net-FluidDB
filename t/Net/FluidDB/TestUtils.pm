@@ -8,6 +8,7 @@ our @EXPORT = qw(
     skip_all_message
     skip_suite_unless_run_all
     ok_sets_cmp
+    ok_dies
 );
 
 use Time::HiRes 'time';
@@ -42,6 +43,11 @@ sub skip_all_message {
 sub ok_sets_cmp {
     my ($a, $b) = @_;
     is_deeply [sort @$a], [sort @$b];
+}
+
+sub ok_dies(&) {
+    eval { shift->() };
+    ok $@;
 }
 
 sub skip_suite_unless_run_all {

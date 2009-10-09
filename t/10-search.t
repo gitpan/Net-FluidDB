@@ -28,7 +28,7 @@ my @object_ids = ();
 for (my $i = -3; $i <= 3; ++$i){
   my $object = Net::FluidDB::Object->new(fdb => $fdb);
   ok $object->create;
-  ok $object->tag($tag, $i);
+  ok $object->tag($tag, $i, fdb_type => 'integer');
   push @object_ids, $object->id;
 }
 

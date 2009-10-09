@@ -18,7 +18,7 @@ __END__
 
 =head1 NAME
 
-Net::FluidDB::HasObject - Role for resources that have an object
+C<Net::FluidDB::HasObject> - Role for resources that have an object
 
 =head1 SYNOPSIS
 
