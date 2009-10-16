@@ -123,15 +123,15 @@ $value = $object->value($tag);
 ok $value->is_float;
 ok $value->value == 0;
 
-ok $object->tag($tag, 0.1, fdb_type => 'float');
+ok $object->tag($tag, 0.5, fdb_type => 'float');
 $value = $object->value($tag);
 ok $value->is_float;
-ok $value->value == 0.1;
+ok $value->value == 0.5;
 
-ok $object->tag($tag, -3.2, fdb_type => 'float');
+ok $object->tag($tag, -0.5, fdb_type => 'float');
 $value = $object->value($tag);
 ok $value->is_float;
-ok $value->value == -3.2;
+ok $value->value == -0.5;
 
 ok $object->tag($tag, 1e9, fdb_type => 'float');
 $value = $object->value($tag);
@@ -143,10 +143,10 @@ $value = $object->value($tag);
 ok $value->is_float;
 ok $value->value == 0;
 
-ok $object->tag($tag, '-76.3', fdb_type => 'float');
+ok $object->tag($tag, '-2.5', fdb_type => 'float');
 $value = $object->value($tag);
 ok $value->is_float;
-ok $value->value == -76.3;
+ok $value->value == -2.5;
 
 ok $object->tag($tag, "this is a string", fdb_type => 'string');
 $value = $object->value($tag);

@@ -8,7 +8,7 @@ use URI;
 use Net::FluidDB::Object;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.07';
+our $VERSION           = '0.08';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -90,7 +90,7 @@ sub request {
         if (exists $opts{on_failure}) {
             $opts{on_failure}->($response);
         } else {
-            print STDERR $response->headers_as_string;
+            print STDERR $response->as_string;
             0;
         }        
     }
