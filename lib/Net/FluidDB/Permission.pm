@@ -82,6 +82,8 @@ C<Net::FluidDB::Permission> is a subclass of L<Net::FluidDB::ACL>.
 
 Retrieves the permission on action C<$action>, for the category C<$category> and path C<$path>.
 
+C<Net::FluidDB> provides a convenience shortcut for this method.
+
 =back
 
 =head2 Instance Methods

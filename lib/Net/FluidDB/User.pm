@@ -63,6 +63,8 @@ C<Net::FluidDB::User> consumes the role L<Net::FluidDB::HasObject>.
 
 Retrieves the user with username C<$username> from FluidDB.
 
+C<Net::FluidDB> provides a convenience shortcut for this method.
+
 =back
 
 =head2 Instance Methods

@@ -6,9 +6,13 @@ use HTTP::Request;
 use URI;
 
 use Net::FluidDB::Object;
+use Net::FluidDB::Namespace;
+use Net::FluidDB::Tag;
+use Net::FluidDB::Policy;
+use Net::FluidDB::Permission;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.08';
+our $VERSION           = '0.09';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -126,6 +130,38 @@ sub content_type_header_for_json {
     }
 }
 
+#
+# -- Convenience shortcuts ----------------------------------------------------
+#
+
+sub get_object {
+    Net::FluidDB::Object->get(@_);
+}
+
+sub search {
+    Net::FluidDB::Object->search(@_);
+}
+
+sub get_namespace {
+    Net::FluidDB::Namespace->get(@_);
+}
+
+sub get_tag {
+    Net::FluidDB::Tag->get(@_);
+}
+
+sub get_policy {
+    Net::FluidDB::Policy->get(@_);
+}
+
+sub get_permission {
+    Net::FluidDB::Permission->get(@_);
+}
+
+sub get_user {
+    Net::FluidDB::User->get(@_);
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
@@ -153,6 +189,17 @@ Net::FluidDB - A Perl interface to FluidDB
  # FluidDB taking credentials from environment variables
  # FLUIDDB_USERNAME and FLUIDDB_PASSWORD
  $fdb = Net::FluidDB->new;
+
+ # Resource getters
+ my $object     = $fdb->get_object($object_id, about => 1);
+ my $ns         = $fdb->get_namespace($path, description => 1);
+ my $tag        = $fdb->get_tag($path, description => 1);
+ my $policy     = $fdb->get_policy($user, $category, $action);
+ my $permission = $fdb->get_permission($category, $path, $action);
+ my $user       = $fdb->get_user($username);
+
+ # Object search
+ my @ids = $fdb->search("has fxn/rating");
 
 =head1 DESCRIPTION
 
@@ -270,6 +317,34 @@ Returns the instance of L<LWP::UserAgent> used to communicate with FluidDB.
 
 Returns the user on behalf of whom fdb is doing calls. This attribute
 is lazy loaded. 
+
+=item $fdb->get_object
+
+Convenience shortcut for C<Net::FluidDB::Object::get>, see L<Net::FluidDB::Object>.
+
+=item $fdb->search
+
+Convenience shortcut for C<Net::FluidDB::Object::search>, see L<Net::FluidDB::Object>.
+
+=item $fdb->get_namespace
+
+Convenience shortcut for C<Net::FluidDB::Namespace::get>, see L<Net::FluidDB::Namespace>.
+
+=item $fdb->get_tag
+
+Convenience shortcut for C<Net::FluidDB::Tag::get>, see L<Net::FluidDB::Tag>.
+
+=item $fdb->get_policy
+
+Convenience shortcut for C<Net::FluidDB::Policy::get>, see L<Net::FluidDB::Policy>.
+
+=item $fdb->get_permission
+
+Convenience shortcut for C<Net::FluidDB::Permission::get>, see L<Net::FluidDB::Permission>.
+
+=item $fdb->get_user
+
+Convenience shortcut for C<Net::FluidDB::User::get>, see L<Net::FluidDB::User>.
 
 =back
 

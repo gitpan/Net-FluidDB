@@ -250,4 +250,11 @@ ok_dies { $object->tag($tag, 0, fdb_type => 'unknown alias') };
 ok_dies { $object->tag($tag, 0, fdb_type => 'integer', mime_type => 'text/plain') };
 ok $object->tag($tag, 0, fdb_type => 'integer', mime_type => Net::FluidDB::Value::Native->mime_type);
 
+# tests delegation in HasObject
+foreach my $res ($fdb->user, $tag->namespace, $tag) {
+    ok $res->tag($tag, 0, fdb_type => 'integer');
+    ok $res->object->value($tag)->value == 0;
+    ok $res->value($tag)->value == 0;
+}
+
 done_testing;

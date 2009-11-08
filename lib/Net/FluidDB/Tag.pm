@@ -193,6 +193,8 @@ Tells C<get> whether you want to fetch the description.
 
 =back
 
+C<Net::FluidDB> provides a convenience shortcut for this method.
+
 =item Net::FluidDB::Tag->equal_paths($path1, $path2)
 
 Determines whether C<$path1> and C<$path2> are the same in FluidDB. The basic

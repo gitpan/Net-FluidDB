@@ -196,6 +196,8 @@ Tells C<get> whether you want to fetch the names of child tags.
 
 =back
 
+C<Net::FluidDB> provides a convenience shortcut for this method.
+
 =back
 
 =head2 Instance Methods

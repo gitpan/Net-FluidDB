@@ -3,8 +3,14 @@ use Moose::Role;
 
 use Net::FluidDB::Object;
 
-has object    => (is => 'ro', isa => 'Net::FluidDB::Object', lazy_build => 1);
 has object_id => (is => 'ro', isa => 'Str', writer => '_set_object_id', predicate => 'has_object_id');
+
+has object => (
+    is         => 'ro',
+    isa        => 'Net::FluidDB::Object',
+    lazy_build => 1,
+    handles    => [qw(tag value)]
+);
 
 sub _build_object {
     # TODO: croak if no ID.
@@ -22,8 +28,11 @@ C<Net::FluidDB::HasObject> - Role for resources that have an object
 
 =head1 SYNOPSIS
 
- $tag->object_id;
- $tag->object;
+ $namespace->object_id;
+ $namespace->object;
+ 
+ $user->tag($tag, 0, fdb_type => 'integer');
+ $user->value($tag)
 
 =head1 DESCRIPTION
 
@@ -44,6 +53,13 @@ The UUID of the object FluidDB created for the resource.
 =item $resource->object
 
 The object FluidDB created for the resource. This attribute is lazy loaded.
+
+=item $resource->tag($tag_or_tag_path, $value, %options)
+
+=item $resource->value($tag_or_tag_path)
+
+Convenience methods that proxy the call to the underlying object.
+See L<Net::FluidDB::Object>.
 
 =back
 

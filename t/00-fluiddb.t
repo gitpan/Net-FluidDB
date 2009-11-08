@@ -1,7 +1,17 @@
 use strict;
 use warnings;
 
+use FindBin qw($Bin);
+use lib $Bin;
+
 use Test::More;
+use Net::FluidDB::Object;
+use Net::FluidDB::Namespace;
+use Net::FluidDB::Tag;
+use Net::FluidDB::Policy;
+use Net::FluidDB::Permission;
+use Net::FluidDB::User;
+use Net::FluidDB::TestUtils;
 
 use_ok('Net::FluidDB');
 
@@ -62,5 +72,57 @@ ok $fdb->password eq 'p';
 $fdb = Net::FluidDB->new_for_testing;
 ok $fdb->username eq $fdb->user->username;
 
-done_testing;
+# -----------------------------------------------------------------------------
 
+$fdb = Net::FluidDB->new_for_testing;
+
+my $user = $fdb->user;
+my $object = $user->object;
+
+my $object2 = $fdb->get_object($object->id, about => 1);
+ok $object2->isa('Net::FluidDB::Object');
+ok $object2->id eq $object->id;
+ok $object2->about eq $object->about;
+
+my $ns = $fdb->get_namespace($fdb->username);
+ok $ns->isa('Net::FluidDB::Namespace');
+ok $ns->path eq $fdb->username;
+
+my $description = random_description;
+my $name        = random_name;
+my $path        = $fdb->username . "/$name";
+
+my $tag = Net::FluidDB::Tag->new(
+    fdb         => $fdb,
+    description => $description,
+    indexed     => 1,
+    path        => $path
+);
+ok $tag->create;
+ok $object->tag($tag, 0, fdb_type => 'integer');
+
+my @ids = $fdb->search("$path = 0");
+ok @ids == 1;
+ok $ids[0] eq $object->id;
+
+my $tag2 = $fdb->get_tag($tag->path);
+ok $tag2->isa('Net::FluidDB::Tag');
+ok $tag2->path eq $tag->path;
+ok $tag->delete;
+
+my $policy = $fdb->get_policy($user, 'namespaces', 'create');
+ok $policy->isa('Net::FluidDB::Policy');
+ok $policy->username eq $user->username;
+ok $policy->category eq 'namespaces';
+ok $policy->action eq 'create';
+
+my $permission = $fdb->get_permission('namespaces', $user->username, 'create');
+ok $policy->isa('Net::FluidDB::Policy');
+ok $permission->category eq 'namespaces';
+ok $permission->action eq 'create';
+
+my $user2 = $fdb->get_user($user->username);
+ok $user2->isa('Net::FluidDB::User');
+ok $user2->username eq $user->username;
+
+done_testing;

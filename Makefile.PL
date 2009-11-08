@@ -12,7 +12,7 @@ WriteMakefile(
       : ()),
     PL_FILES=> {},
     PREREQ_PM => {
-        'Test::More'             => 0,
+        'Test::Simple'           => '0.87', # because of done_testing()
         'LWP'                    => 0,
         'Moose'                  => 0,
         'MooseX::ClassAttribute' => 0,

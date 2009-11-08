@@ -286,10 +286,14 @@ has an about attribute in FluidDB.
 
 =back
 
+C<Net::FluidDB> provides a convenience shortcut for this method.
+
 =item Net::FluidDB::Object->search($fdb, $query)
 
 Performs the query C<$query> and returns a (possibly empty) array of strings with
 the IDs of the macthing objects.
+
+C<Net::FluidDB> provides a convenience shortcut for this method.
 
 =back
 

@@ -1,5 +1,16 @@
 Revision history for Net-FluidDB
 
+0.09    2009-11-08
+        * Implements convenience shortcuts:
+            $fdb->get_object
+            $fdb->get_namespace
+            $fdb->get_tag
+            $fdb->get_policy
+            $fdb->get_permission
+            $fdb->get_user
+            $fdb->search
+        * Users, tags, and namespaces are directly taggable.
+
 0.08    2009-10-16
         * Fixes a few tests that weren't correct for Perl with long doubles
           (that is, the test themselves had a bug). Thanks to CPAN Testers

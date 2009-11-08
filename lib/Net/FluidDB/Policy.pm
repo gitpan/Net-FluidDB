@@ -140,6 +140,8 @@ C<Net::FluidDB::Policy> is a subclass of L<Net::FluidDB::ACL>.
 Retrieves the policy on action C<$action>, for the category C<$category> of
 user C<$user_or_username>.
 
+C<Net::FluidDB> provides a convenience shortcut for this method.
+
 =item Net::FluidDB::Policy->get_I<action>_policy_for_I<category>($fdb, $user_or_username)
 
 These are convenience methods, there's one for each defined pair action/category:
