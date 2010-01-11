@@ -12,7 +12,7 @@ use Net::FluidDB::Policy;
 use Net::FluidDB::Permission;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.09';
+our $VERSION           = '0.10';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -354,7 +354,7 @@ Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009 Xavier Noria
+Copyright (C) 2009-2010 Xavier Noria
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

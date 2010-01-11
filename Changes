@@ -1,5 +1,10 @@
 Revision history for Net-FluidDB
 
+0.10    2010-01-11
+        * Just a heartbeat release.
+        * Updates copyright.
+        * Tested against the FluidDB release recently published.
+
 0.09    2009-11-08
         * Implements convenience shortcuts:
             $fdb->get_object
