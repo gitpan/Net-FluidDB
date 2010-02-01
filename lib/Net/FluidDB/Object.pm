@@ -31,6 +31,9 @@ sub create {
             my $response = shift;
             my $h = $self->json->decode($response->content);        
             $self->_set_id($h->{id});
+            # Unset tag paths to force fetching the about tag.
+            $self->_set_tag_paths(['fluiddb/about']) if $self->has_about;
+            1;
         }
     );
 }
@@ -201,6 +204,20 @@ sub is_tag_path_present {
     return 0;
 }
 
+sub untag {
+    my ($self, $tag_or_tag_path) = @_;
+
+    my $tag_path = $self->get_tag_path_from_tag_or_tag_path($tag_or_tag_path);
+    $self->fdb->delete(
+        path       => $self->abs_path('objects', $self->id, $tag_path),
+        on_success => sub {
+            my @rest = grep { !Net::FluidDB::HasPath->equal_paths($tag_path, $_) } @{$self->tag_paths};
+            $self->_set_tag_paths(\@rest);
+            1;
+        }
+    );
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
@@ -233,7 +250,10 @@ Net::FluidDB::Object - FluidDB objects
  $object->tag("fxn/avatar", $image, mime_type => 'image/png');
 
  # retrieve a tag value
- $value = $object->("fxn/rating");
+ $value = $object->value("fxn/rating");
+ 
+ # remove a tag
+ $object->untag("fxn/rating");
 
  # search
  @ids = Net::FluidDB::Object->search($fdb, "has fxn/rating");
@@ -411,6 +431,12 @@ Native values have predicates:
 The MIME type of a non-native value is also available:
 
     $value->mime_type;
+
+=back
+
+=item $object->untag($tag_or_tag_path)
+
+Untags an object.
 
 =back
 

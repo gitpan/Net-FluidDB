@@ -24,7 +24,6 @@ my ($object, $description, $name, $path, $tag, $value);
 ## creates an object with about
 $object = Net::FluidDB::Object->new(fdb => $fdb, about => random_about);
 ok $object->create;
-ok @{$object->tag_paths} == 0;
 
 $description = random_description;
 $name = random_name;
@@ -44,14 +43,12 @@ $value = $object->value($tag);
 ok $value->is_null;
 ok !defined $value->value;
 ok $object->is_tag_path_present($tag->path);
-ok @{$object->tag_paths} == 1;
 
 ok $object->tag($tag, undef);
 $value = $object->value($tag);
 ok $value->is_null;
 ok !defined $value->value;
 ok $object->is_tag_path_present($tag->path);
-ok @{$object->tag_paths} == 1;
 
 ok $object->tag($tag, 1, fdb_type => 'boolean');
 $value = $object->value($tag);
@@ -256,5 +253,17 @@ foreach my $res ($fdb->user, $tag->namespace, $tag) {
     ok $res->object->value($tag)->value == 0;
     ok $res->value($tag)->value == 0;
 }
+
+# untag
+$path = $tag->path;
+my $n = @{$object->tag_paths};
+ok $object->untag($tag);
+ok @{$object->tag_paths} == $n - 1;
+ok !$object->is_tag_path_present($path);
+
+$object = Net::FluidDB::Object->get($fdb, $object->id);
+ok !$object->is_tag_path_present($path);
+
+ok $tag->delete;
 
 done_testing;

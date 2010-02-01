@@ -12,7 +12,7 @@ use Net::FluidDB::Policy;
 use Net::FluidDB::Permission;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.10';
+our $VERSION           = '0.11';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';

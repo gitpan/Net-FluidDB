@@ -37,6 +37,20 @@ $object2 = Net::FluidDB::Object->get($fdb, $object->id);
 ok $object2->id eq $object->id;
 ok !$object2->has_about;
 
+# tag paths
+$object = Net::FluidDB::Object->new(fdb => $fdb);
+ok @{$object->tag_paths} == 0;
+ok $object->create;
+ok @{$object->tag_paths} == 0;
+
+$object = Net::FluidDB::Object->new(fdb => $fdb, about => random_about);
+ok @{$object->tag_paths} == 0;
+ok $object->create;
+ok @{$object->tag_paths} == 1;
+ok $object->tag_paths->[0] eq 'fluiddb/about';
+$object2 = Net::FluidDB::Object->get($fdb, $object->id);
+ok_sets_cmp $object->tag_paths, $object2->tag_paths;
+
 # Now we are gonna do some variations just in case, but the proper place to
 # test them is the suite of the Tag class.
 

@@ -1,5 +1,10 @@
 Revision history for Net-FluidDB
 
+0.11    2010-02-01
+        * Bug fix: An object created with about has an about tag (reported by JMERELO)
+        * Implements Object->untag (suggested by JMERELO)
+        * Doc fix: Typo in Object's SYMOPSIS (spotted by JMERELO)
+
 0.10    2010-01-11
         * Just a heartbeat release.
         * Updates copyright.
