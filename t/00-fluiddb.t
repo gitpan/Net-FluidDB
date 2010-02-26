@@ -99,7 +99,7 @@ my $tag = Net::FluidDB::Tag->new(
     path        => $path
 );
 ok $tag->create;
-ok $object->tag($tag, 0, fdb_type => 'integer');
+ok $object->tag($tag, integer => 0);
 
 my @ids = $fdb->search("$path = 0");
 ok @ids == 1;

@@ -31,7 +31,7 @@ C<Net::FluidDB::HasObject> - Role for resources that have an object
  $namespace->object_id;
  $namespace->object;
  
- $user->tag($tag, 0, fdb_type => 'integer');
+ $user->tag($tag, integer => 0);
  $user->value($tag)
 
 =head1 DESCRIPTION
