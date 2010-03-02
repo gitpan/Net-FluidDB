@@ -69,12 +69,12 @@ ok $fdb->password eq 'p';
 
 # -----------------------------------------------------------------------------
 
-$fdb = Net::FluidDB->new_for_testing;
+$fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
 ok $fdb->username eq $fdb->user->username;
 
 # -----------------------------------------------------------------------------
 
-$fdb = Net::FluidDB->new_for_testing;
+$fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
 
 my $user = $fdb->user;
 my $object = $user->object;

@@ -10,7 +10,7 @@ use Net::FluidDB::TestUtils;
 
 use_ok('Net::FluidDB::Tag');
 
-my $fdb = Net::FluidDB->new_for_testing;
+my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
 
 my ($tag, $tag2, $description, $name, $path);
 

@@ -6,7 +6,7 @@ use Net::FluidDB;
 
 use_ok('Net::FluidDB::User');
 
-my $fdb = Net::FluidDB->new_for_testing;
+my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
 foreach my $username ('test', 'net-fluiddb', 'fxn') {
     my $user = Net::FluidDB::User->get($fdb, $username);
     ok $user->username eq $username;

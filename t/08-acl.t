@@ -6,7 +6,7 @@ use Net::FluidDB;
 
 use_ok('Net::FluidDB::ACL');
 
-my $fdb = Net::FluidDB->new_for_testing;
+my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
 my $acl = Net::FluidDB::ACL->new(fdb => $fdb);
 
 $acl->policy('open');

@@ -23,7 +23,7 @@ skip_suite_unless_run_all;
 
 use_ok('Net::FluidDB::Policy');
 
-my $fdb = Net::FluidDB->new_for_testing;
+my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
 $fdb->username($username);
 $fdb->password($password);
 

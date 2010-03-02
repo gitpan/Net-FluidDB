@@ -46,7 +46,7 @@ use_ok('Net::FluidDB::Permission');
 
 my ($perm, $path, $ns, $tag);
 
-my $fdb = Net::FluidDB->new_for_testing;
+my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
 $fdb->username($username);
 $fdb->password($password);
 
