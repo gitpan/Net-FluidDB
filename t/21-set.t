@@ -8,7 +8,14 @@ use_ok 'Net::FluidDB::Value::Set';
 my $v;
 
 $v = Net::FluidDB::Value::Set->new;
-ok $v->type_alias eq 'set';
+ok !$v->is_non_native;
+ok  $v->is_native;
+ok !$v->is_null;
+ok !$v->is_boolean;
+ok !$v->is_integer;
+ok !$v->is_float;
+ok !$v->is_string;
+ok  $v->is_set;
 
 ok '[]'             eq Net::FluidDB::Value::Set->new(value => [])->to_json;
 ok '[""]'           eq Net::FluidDB::Value::Set->new(value => [''])->to_json;

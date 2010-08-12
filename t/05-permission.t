@@ -33,7 +33,7 @@ sub check_perm {
     ok_sets_cmp $perm2->exceptions, $perm->exceptions;
 }
 
-my ($username, $password) = net_fluiddb_credentials;
+my ($username, $password) = net_fluiddb_dev_credentials;
 
 unless (defined $username && defined $password) {
     plan skip_all => skip_all_message;
@@ -46,7 +46,7 @@ use_ok('Net::FluidDB::Permission');
 
 my ($perm, $path, $ns, $tag);
 
-my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
+my $fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
 $fdb->username($username);
 $fdb->password($password);
 

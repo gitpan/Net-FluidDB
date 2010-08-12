@@ -8,7 +8,7 @@ use Test::More;
 use Net::FluidDB;
 use Net::FluidDB::TestUtils;
 
-my ($username, $password) = net_fluiddb_credentials;
+my ($username, $password) = net_fluiddb_dev_credentials;
 
 unless (defined $username && defined $password) {
     plan skip_all => skip_all_message;
@@ -23,7 +23,7 @@ skip_suite_unless_run_all;
 
 use_ok('Net::FluidDB::Policy');
 
-my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
+my $fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
 $fdb->username($username);
 $fdb->password($password);
 
@@ -72,7 +72,6 @@ foreach my $u ($username, Net::FluidDB::User->get($fdb, $username), 'test', Net:
     ok $policy->action   eq 'see';
     is_policy(Net::FluidDB::Policy->get_create_policy_for_tag_values($fdb, $u));
     is_policy(Net::FluidDB::Policy->get_read_policy_for_tag_values($fdb, $u));
-    is_policy(Net::FluidDB::Policy->get_update_policy_for_tag_values($fdb, $u));
     is_policy(Net::FluidDB::Policy->get_delete_policy_for_tag_values($fdb, $u));
     is_policy(Net::FluidDB::Policy->get_control_policy_for_tag_values($fdb, $u));
 }

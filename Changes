@@ -1,15 +1,9 @@
 Revision history for Net-FluidDB
 
-0.21    2010-03-02
-        * The test user got some permissions removed and that broke the test
-          suite. This release switches to a dedicated user to be green again.
-
-0.20    2010-02-27
-        * New interface for tagging. The change is not backwards
-          compatible, the previous interface is gone. Please check
-          the documentation of Net::FluidDB::Object.
-        * Net::FluidDB::Value and its descendants no longer belong
-          to the public interface.
+0.12    2010-08-12
+        * Tested against the minor update released today
+        * "update" is no longer an action of the "tag-values" category
+        * The test suite runs now against the main instance with the net-fluiddb user
 
 0.11    2010-02-01
         * Bug fix: An object created with about has an about tag (reported by JMERELO)

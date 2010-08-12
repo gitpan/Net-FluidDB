@@ -66,14 +66,12 @@ sub type_from_json {
 our %VALID_ALIASES = map { $_ => 1 } qw(null boolean integer float string set);
 sub type_from_alias {
     my ($class, $alias) = @_;
-    "Net::FluidDB::Value::\u$alias" if exists $VALID_ALIASES{$alias};
-}
-
-sub type_alias {
-    my $self = shift;
-    my $class = ref $self || $self;
-    my ($type_alias) = $class =~ /::(\w+)$/;
-    lc $type_alias;
+    
+    if (exists $VALID_ALIASES{$alias}) {
+        "Net::FluidDB::Value::\u$alias";
+    } else {
+        croak "unknown FluidDB type: $alias\n";
+    }
 }
 
 sub to_json {
@@ -88,7 +86,85 @@ sub is_native {
     1;
 }
 
+sub is_null {
+    0;
+}
+
+sub is_boolean {
+    0;
+}
+
+sub is_integer {
+    0;
+}
+
+sub is_float {
+    0;
+}
+
+sub is_string {
+    0;
+}
+
+sub is_set {
+    0;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=head1 NAME
+
+Net::FluidDB::Value::Native - FluidDB native values
+
+=head1 SYNOPSIS
+
+ $value = $object->value("fxn/rating");
+ 
+=head1 DESCRIPTION
+
+C<Net::FluidDB::Value::Native> models FluidDB native values.
+
+FluidDB native types are null, boolean, integer, float, string, and set (of strings).
+
+=head1 USAGE
+
+=head2 Inheritance
+
+C<Net::FluidDB::Value::Native> is a subclass of L<Net::FluidDB::Value>.
+
+C<Net::FluidDB::Value::Native> is a parent class of L<Net::FluidDB::Value::Null>,
+L<Net::FluidDB::Value::Boolean>, L<Net::FluidDB::Value::Integer>,
+L<Net::FluidDB::Value::Float>, L<Net::FluidDB::Value::String>, and
+L<Net::FluidDB::Value::Set>.
+
+=head2 Instance Methods
+
+Native values respond to the following predicates:
+
+    $value->is_null;
+    $value->is_boolean;
+    $value->is_integer;
+    $value->is_float;
+    $value->is_string;
+    $value->is_set;
+
+=head1 AUTHOR
+
+Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009-2010 Xavier Noria
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
+
+=cut

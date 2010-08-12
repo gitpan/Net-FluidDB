@@ -10,7 +10,7 @@ use Net::FluidDB::TestUtils;
 
 use_ok('Net::FluidDB::Namespace');
 
-my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
+my $fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
 
 my ($ns, $ns2, $name, $path, $description, $parent, $tag, @namespace_names, @tag_names, @tags);
 

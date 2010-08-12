@@ -69,12 +69,27 @@ ok $fdb->password eq 'p';
 
 # -----------------------------------------------------------------------------
 
-$fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
-ok $fdb->username eq $fdb->user->username;
+$fdb = Net::FluidDB->new_for_testing;
+ok $fdb->username eq 'test';
+ok $fdb->password eq 'test';
+{
+    no warnings;
+    ok $fdb->host eq $Net::FluidDB::SANDBOX_HOST;
+}
 
 # -----------------------------------------------------------------------------
 
-$fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
+$fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
+ok $fdb->username eq 'net-fluiddb';
+ok $fdb->password eq 'i98jijojijup92jo';
+{
+    no warnings;
+    ok $fdb->host eq $Net::FluidDB::DEFAULT_HOST;
+}
+
+# -----------------------------------------------------------------------------
+
+$fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
 
 my $user = $fdb->user;
 my $object = $user->object;
@@ -98,8 +113,9 @@ my $tag = Net::FluidDB::Tag->new(
     indexed     => 1,
     path        => $path
 );
+
 ok $tag->create;
-ok $object->tag($tag, integer => 0);
+ok $object->tag($tag, 0, fdb_type => 'integer');
 
 my @ids = $fdb->search("$path = 0");
 ok @ids == 1;

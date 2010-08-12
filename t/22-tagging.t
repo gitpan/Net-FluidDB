@@ -8,11 +8,18 @@ use Test::More;
 use Net::FluidDB;
 use Net::FluidDB::Object;
 use Net::FluidDB::Tag;
+use Net::FluidDB::Value;
+use Net::FluidDB::Value::Null;
+use Net::FluidDB::Value::Boolean;
+use Net::FluidDB::Value::Integer;
+use Net::FluidDB::Value::Float;
+use Net::FluidDB::Value::String;
+use Net::FluidDB::Value::Set;
 use Net::FluidDB::TestUtils;
 
-my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
+my $fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
 
-my ($object, $description, $name, $path, $tag, $type, $value);
+my ($object, $description, $name, $path, $tag, $value);
 
 ## creates an object with about
 $object = Net::FluidDB::Object->new(fdb => $fdb, about => random_about);
@@ -32,241 +39,219 @@ $tag = Net::FluidDB::Tag->new(
 ok $tag->create;
 
 ok $object->tag($tag);
-ok $object->is_tag_path_present($tag->path);
 $value = $object->value($tag);
-ok !defined $value;
-($type, $value) = $object->value($tag);
-ok $type eq 'null';
-ok !defined $value;
+ok $value->is_null;
+ok !defined $value->value;
+ok $object->is_tag_path_present($tag->path);
 
 ok $object->tag($tag, undef);
+$value = $object->value($tag);
+ok $value->is_null;
+ok !defined $value->value;
 ok $object->is_tag_path_present($tag->path);
-$value = $object->value($tag);
-ok !defined $value;
-($type, $value) = $object->value($tag);
-ok $type eq 'null';
-ok !defined $value;
 
-ok $object->tag($tag, boolean => 1);
+ok $object->tag($tag, 1, fdb_type => 'boolean');
 $value = $object->value($tag);
-ok $value;
-($type, $value) = $object->value($tag);
-ok $type eq 'boolean';
-ok $value;
+ok $value->is_boolean;
+ok $value->value;
 
-ok $object->tag($tag, boolean => "this is true in boolean context");
+ok $object->tag($tag, "this is true in boolean context", fdb_type => 'boolean');
 $value = $object->value($tag);
-ok $value;
-($type, $value) = $object->value($tag);
-ok $type eq 'boolean';
-ok $value;
+ok $value->is_boolean;
+ok $value->value;
 
-ok $object->tag($tag, boolean => 0);
+ok $object->tag($tag, 0, fdb_type => 'boolean');
 $value = $object->value($tag);
-ok !$value;
-($type, $value) = $object->value($tag);
-ok $type eq 'boolean';
-ok !$value;
+ok $value->is_boolean;
+ok !$value->value;
 
-ok $object->tag($tag, boolean => 0.0);
+ok $object->tag($tag, 0.0, fdb_type => 'boolean');
 $value = $object->value($tag);
-ok !$value;
-($type, $value) = $object->value($tag);
-ok $type eq 'boolean';
-ok !$value;
+ok $value->is_boolean;
+ok !$value->value;
 
-ok $object->tag($tag, boolean => undef);
+ok $object->tag($tag, undef, fdb_type => 'boolean');
 $value = $object->value($tag);
-ok !$value;
-($type, $value) = $object->value($tag);
-ok $type eq 'boolean';
-ok !$value;
+ok $value->is_boolean;
+ok !$value->value;
 
-ok $object->tag($tag, boolean => "");
+ok $object->tag($tag, "", fdb_type => 'boolean');
 $value = $object->value($tag);
-ok !$value;
-($type, $value) = $object->value($tag);
-ok $type eq 'boolean';
-ok !$value;
+ok $value->is_boolean;
+ok !$value->value;
 
-ok $object->tag($tag, boolean => "0");
+ok $object->tag($tag, "0", fdb_type => 'boolean');
 $value = $object->value($tag);
-ok !$value;
-($type, $value) = $object->value($tag);
-ok $type eq 'boolean';
-ok !$value;
+ok $value->is_boolean;
+ok !$value->value;
 
-ok $object->tag($tag, integer => 0);
+ok $object->tag($tag, 0, fdb_type => 'integer');
 $value = $object->value($tag);
-ok $value == 0;
-($type, $value) = $object->value($tag);
-ok $type eq 'integer';
-ok $value == 0;
+ok $value->is_integer;
+ok $value->value == 0;
 
-ok $object->tag($tag, integer => 7);
+ok $object->tag($tag, 7, fdb_type => 'integer');
 $value = $object->value($tag);
-ok $value == 7;
-($type, $value) = $object->value($tag);
-ok $type eq 'integer';
-ok $value == 7;
+ok $value->is_integer;
+ok $value->value == 7;
 
-ok $object->tag($tag, integer => -1);
+ok $object->tag($tag, -1, fdb_type => 'integer');
 $value = $object->value($tag);
-ok $value == -1;
-($type, $value) = $object->value($tag);
-ok $type eq 'integer';
-ok $value == -1;
+ok $value->is_integer;
+ok $value->value == -1;
 
-ok $object->tag($tag, integer => "35foo");
+ok $object->tag($tag, "35foo", fdb_type => 'integer');
 $value = $object->value($tag);
-ok $value == 35;
-($type, $value) = $object->value($tag);
-ok $type eq 'integer';
-ok $value == 35;
+ok $value->is_integer;
+ok $value->value == 35;
 
-ok $object->tag($tag, integer => "foo");
+ok $object->tag($tag, "foo", fdb_type => 'integer');
 $value = $object->value($tag);
-ok $value == 0;
-($type, $value) = $object->value($tag);
-ok $type eq 'integer';
-ok $value == 0;
+ok $value->is_integer;
+ok $value->value == 0;
 
-ok $object->tag($tag, integer => -3.14);
+ok $object->tag($tag, -3.14, fdb_type => 'integer');
 $value = $object->value($tag);
-ok $value == -3;
-($type, $value) = $object->value($tag);
-ok $type eq 'integer';
-ok $value == -3;
+ok $value->is_integer;
+ok $value->value == -3;
 
-ok $object->tag($tag, float => 0);
+ok $object->tag($tag, 0, fdb_type => 'float');
 $value = $object->value($tag);
-ok $value == 0;
-($type, $value) = $object->value($tag);
-ok $type eq 'float';
-ok $value == 0;
+ok $value->is_float;
+ok $value->value == 0;
 
-ok $object->tag($tag, float => 0.5);
+ok $object->tag($tag, 0.5, fdb_type => 'float');
 $value = $object->value($tag);
-ok $value == 0.5;
-($type, $value) = $object->value($tag);
-ok $type eq 'float';
-ok $value == 0.5;
+ok $value->is_float;
+ok $value->value == 0.5;
 
-ok $object->tag($tag, float => -0.5);
+ok $object->tag($tag, -0.5, fdb_type => 'float');
 $value = $object->value($tag);
-ok $value == -0.5;
-($type, $value) = $object->value($tag);
-ok $type eq 'float';
-ok $value == -0.5;
+ok $value->is_float;
+ok $value->value == -0.5;
 
-ok $object->tag($tag, float => 1e9);
+ok $object->tag($tag, 1e9, fdb_type => 'float');
 $value = $object->value($tag);
-ok $value == 1e9;
-($type, $value) = $object->value($tag);
-ok $type eq 'float';
-ok $value == 1e9;
+ok $value->is_float;
+ok $value->value == 1e9;
 
-ok $object->tag($tag, float => "");
+ok $object->tag($tag, "", fdb_type => 'float');
 $value = $object->value($tag);
-ok $value == 0;
-($type, $value) = $object->value($tag);
-ok $type eq 'float';
-ok $value == 0;
+ok $value->is_float;
+ok $value->value == 0;
 
-ok $object->tag($tag, float => '-2.5');
+ok $object->tag($tag, '-2.5', fdb_type => 'float');
 $value = $object->value($tag);
-ok $value == -2.5;
-($type, $value) = $object->value($tag);
-ok $type eq 'float';
-ok $value == -2.5;
+ok $value->is_float;
+ok $value->value == -2.5;
 
-ok $object->tag($tag, string => "this is a string");
+ok $object->tag($tag, "this is a string", fdb_type => 'string');
 $value = $object->value($tag);
-ok $value eq "this is a string";
-($type, $value) = $object->value($tag);
-ok $type eq 'string';
-ok $value eq "this is a string";
+ok $value->is_string;
+ok $value->value eq "this is a string";
 
-ok $object->tag($tag, string => "newlines \n\n\n newlines");
+ok $object->tag($tag, "newlines \n\n\n newlines", fdb_type => 'string');
 $value = $object->value($tag);
-ok $value eq "newlines \n\n\n newlines";
-($type, $value) = $object->value($tag);
-ok $type eq 'string';
-ok $value eq "newlines \n\n\n newlines";
+ok $value->is_string;
+ok $value->value eq "newlines \n\n\n newlines";
 
-ok $object->tag($tag, string => "");
+ok $object->tag($tag, "", fdb_type => 'string');
 $value = $object->value($tag);
-ok $value eq "";
-($type, $value) = $object->value($tag);
-ok $type eq 'string';
-ok $value eq "";
+ok $value->is_string;
+ok $value->value eq "";
 
-ok $object->tag($tag, string => undef);
+ok $object->tag($tag, undef, fdb_type => 'string');
 $value = $object->value($tag);
-ok $value eq "";
-($type, $value) = $object->value($tag);
-ok $type eq 'string';
-ok $value eq "";
+ok $value->is_string;
+ok $value->value eq "";
 
-ok $object->tag($tag, string => 97);
+ok $object->tag($tag, 97, fdb_type => 'string');
 $value = $object->value($tag);
-ok $value eq "97";
-($type, $value) = $object->value($tag);
-ok $type eq 'string';
-ok $value eq "97";
+ok $value->is_string;
+ok $value->value eq "97";
 
-ok $object->tag($tag, string => -2.7183);
+ok $object->tag($tag, -2.7183, fdb_type => 'string');
 $value = $object->value($tag);
-ok $value eq "-2.7183";
-($type, $value) = $object->value($tag);
-ok $type eq 'string';
-ok $value eq "-2.7183";
+ok $value->is_string;
+ok $value->value eq "-2.7183";
 
 ok $object->tag($tag, []);
 $value = $object->value($tag);
-ok_sets_cmp $value, [];
-($type, $value) = $object->value($tag);
-ok $type eq 'set';
-ok_sets_cmp $value, [];
+ok $value->is_set;
+ok_sets_cmp $value->value, [];
 
 ok $object->tag($tag, ['foo', 'bar']);
 $value = $object->value($tag);
-ok_sets_cmp $value, ['foo', 'bar'];
-($type, $value) = $object->value($tag);
-ok $type eq 'set';
-ok_sets_cmp $value, ['foo', 'bar'];
+ok $value->is_set;
+ok_sets_cmp $value->value, ['foo', 'bar'];
 
-ok $object->tag($tag, set => [0, 1]);
+ok $object->tag($tag, [0, 1], fdb_type => 'set');
 $value = $object->value($tag);
-ok_sets_cmp $value, [0, 1];
-($type, $value) = $object->value($tag);
-ok $type eq 'set';
-ok_sets_cmp $value, [0, 1];
+ok $value->is_set;
+ok_sets_cmp $value->value, ['0', '1'];
 
-ok $object->tag($tag, 'text/plain' => 'this is plain text');
+ok $object->tag($tag, 'this is plain text', mime_type => 'text/plain');
 $value = $object->value($tag);
-ok $value eq 'this is plain text';
-($type, $value) = $object->value($tag);
-ok $type eq 'text/plain';
-ok $value eq 'this is plain text';
+ok $value->is_non_native;
+ok $value->mime_type eq 'text/plain';
+ok $value->value eq 'this is plain text';
 
-ok $object->tag($tag, 'application/json' => '{}');
+ok $object->tag($tag, '{}', mime_type => 'application/json');
 $value = $object->value($tag);
-ok $value eq '{}';
-($type, $value) = $object->value($tag);
-ok $type eq 'application/json';
-ok $value eq '{}';
+ok $value->is_non_native;
+ok $value->mime_type eq 'application/json';
+ok $value->value eq '{}';
+
+ok $object->tag($tag, Net::FluidDB::Value::Null->new);
+$value = $object->value($tag);
+ok $value->is_null;
+
+ok $object->tag($tag, Net::FluidDB::Value::Boolean->new(value => 1));
+$value = $object->value($tag);
+ok $value->is_boolean;
+ok $value->value;
+
+ok $object->tag($tag, Net::FluidDB::Value::Integer->new(value => 7));
+$value = $object->value($tag);
+ok $value->is_integer;
+ok $value->value == 7;
+
+ok $object->tag($tag, Net::FluidDB::Value::Float->new(value => 0.01));
+$value = $object->value($tag);
+ok $value->is_float;
+ok $value->value == 0.01;
+
+ok $object->tag($tag, Net::FluidDB::Value::String->new(value => "foo bar baz"));
+$value = $object->value($tag);
+ok $value->is_string;
+ok $value->value eq "foo bar baz";
+
+ok $object->tag($tag, Net::FluidDB::Value::Set->new(value => [qw(foo bar baz)]));
+$value = $object->value($tag);
+ok $value->is_set;
+ok_sets_cmp $value->value, [qw(foo bar baz)];
+
+ok $object->tag($tag, Net::FluidDB::Value::NonNative->new(value => 'opaque', mime_type => 'text/plain'));
+$value = $object->value($tag);
+ok $value->is_non_native;
+ok $value->value eq 'opaque';
+ok $value->mime_type eq 'text/plain';
 
 ok_dies { $object->tag($tag, 0) };
 ok_dies { $object->tag($tag, 7) };
 ok_dies { $object->tag($tag, 3.2) };
 ok_dies { $object->tag($tag, "foo bar") };
 
+ok_dies { $object->tag($tag, 0, fdb_type => 'unknown alias') };
+
+ok_dies { $object->tag($tag, 0, fdb_type => 'integer', mime_type => 'text/plain') };
+ok $object->tag($tag, 0, fdb_type => 'integer', mime_type => Net::FluidDB::Value::Native->mime_type);
+
 # tests delegation in HasObject
 foreach my $res ($fdb->user, $tag->namespace, $tag) {
-    ok $res->tag($tag, integer => 0);
-    ok $res->object->value($tag) == 0;
-    ok $res->value($tag) == 0;
+    ok $res->tag($tag, 0, fdb_type => 'integer');
+    ok $res->object->value($tag)->value == 0;
+    ok $res->value($tag)->value == 0;
 }
 
 # untag

@@ -4,7 +4,7 @@ our @EXPORT = qw(
     random_about
     random_description
     random_name
-    net_fluiddb_credentials
+    net_fluiddb_dev_credentials
     skip_all_message
     skip_suite_unless_run_all
     ok_sets_cmp
@@ -32,8 +32,11 @@ sub random_token {
     join $separator, "Net::FluidDB", $token, time, rand;
 }
 
-sub net_fluiddb_credentials {
-    @ENV{'NET_FLUIDDB_USERNAME', 'NET_FLUIDDB_PASSWORD'};
+# These are used to run the suites of policies and permissions. The dev user
+# should be dedicated, not net-fluiddb, so that these tests can't interfere
+# with suites running somewhere else.
+sub net_fluiddb_dev_credentials {
+    @ENV{'NET_FLUIDDB_DEV_USERNAME', 'NET_FLUIDDB_DEV_PASSWORD'};
 }
 
 sub skip_all_message {

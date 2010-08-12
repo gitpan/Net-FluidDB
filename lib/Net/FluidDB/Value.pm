@@ -37,16 +37,64 @@ sub payload {
     # abstract
 }
 
-sub type {
-    my $self = shift;
-    if ($self->is_native) {
-        $self->type_alias;
-    } else {
-        $self->mime_type;
-    }
-}
-
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=head1 NAME
+
+Net::FluidDB::Value - FluidDB values
+
+=head1 SYNOPSIS
+
+ $value = $object->value("fxn/rating");
+ 
+=head1 DESCRIPTION
+
+C<Net::FluidDB::Value> models FluidDB values.
+
+C<Net::FluidDB::Value> is a parent class of L<Net::FluidDB::Value::Native> and
+L<Net::FluidDB::Value::NonNative>.
+
+=head1 USAGE
+
+=head2 Instance Methods
+
+=over
+
+=item $value->value
+
+Returns the actual scalar value.
+
+=item $value->mime_type
+
+Returns the MIME type of the value.
+
+=item $value->is_native
+
+Says whether the value is native, see L<Net::FluidDB::Value::Native>.
+
+=item $value->is_non_native
+
+Says whether the value is native, see L<Net::FluidDB::Value::NonNative>.
+
+=back
+
+=head1 AUTHOR
+
+Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009-2010 Xavier Noria
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
+
+=cut

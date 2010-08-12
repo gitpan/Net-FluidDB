@@ -12,7 +12,7 @@ use Net::FluidDB::Policy;
 use Net::FluidDB::Permission;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.21';
+our $VERSION           = '0.22';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -49,9 +49,9 @@ sub new_for_testing {
     $class->new(username => 'test', password => 'test', host => $SANDBOX_HOST, %attrs);
 }
 
-sub __new_for_net_fluiddb_testing {
+sub _new_for_net_fluiddb_test_suite {
     my ($class, %attrs) = @_;
-    $class->new(username => 'net-fluiddb', password => 'i98jijojijup92jo', host => $SANDBOX_HOST, %attrs);
+    $class->new(username => 'net-fluiddb', password => 'i98jijojijup92jo', %attrs);
 }
 
 sub get {

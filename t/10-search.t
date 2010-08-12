@@ -10,7 +10,7 @@ use Net::FluidDB::Object;
 use Net::FluidDB::Tag;
 use Net::FluidDB::TestUtils;
 
-my $fdb = Net::FluidDB->__new_for_net_fluiddb_testing;
+my $fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
 
 my $description = random_description;
 my $name = random_name;
@@ -28,7 +28,7 @@ my @object_ids = ();
 for (my $i = -3; $i <= 3; ++$i){
   my $object = Net::FluidDB::Object->new(fdb => $fdb);
   ok $object->create;
-  ok $object->tag($tag, integer => $i);
+  ok $object->tag($tag, $i, fdb_type => 'integer');
   push @object_ids, $object->id;
 }
 

@@ -8,7 +8,14 @@ use_ok 'Net::FluidDB::Value::Boolean';
 my $v;
 
 $v = Net::FluidDB::Value::Boolean->new;
-ok $v->type_alias eq 'boolean';
+ok !$v->is_non_native;
+ok  $v->is_native;
+ok !$v->is_null;
+ok  $v->is_boolean;
+ok !$v->is_integer;
+ok !$v->is_float;
+ok !$v->is_string;
+ok !$v->is_set;
 
 foreach $v (1, "00", 1.0, "false", []) {
     ok 'true' eq Net::FluidDB::Value::Boolean->new(value => $v)->to_json;
