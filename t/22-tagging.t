@@ -219,7 +219,7 @@ ok $value->value == 7;
 ok $object->tag($tag, Net::FluidDB::Value::Float->new(value => 0.01));
 $value = $object->value($tag);
 ok $value->is_float;
-ok $value->value == 0.01;
+ok sprintf('%.2f', $value->value) eq '0.01';
 
 ok $object->tag($tag, Net::FluidDB::Value::String->new(value => "foo bar baz"));
 $value = $object->value($tag);

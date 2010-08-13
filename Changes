@@ -1,5 +1,9 @@
 Revision history for Net-FluidDB
 
+0.13    2010-08-13
+        * The suite is red in the machines of some CPAN Testers (FTW!)
+          due to a floating point comparison in an assertion. Fixes that.
+
 0.12    2010-08-12
         * Tested against the minor update released today
         * "update" is no longer an action of the "tag-values" category
