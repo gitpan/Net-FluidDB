@@ -15,7 +15,7 @@ has object => (
 sub _build_object {
     # TODO: croak if no ID.
     my $self = shift;
-    Net::FluidDB::Object->get($self->fdb, $self->object_id, about => 1);
+    Net::FluidDB::Object->get_by_id($self->fdb, $self->object_id, about => 1);
 }
 
 1;
@@ -31,7 +31,7 @@ C<Net::FluidDB::HasObject> - Role for resources that have an object
  $namespace->object_id;
  $namespace->object;
  
- $user->tag($tag, 0, fdb_type => 'integer');
+ $user->tag($tag, integer => 0);
  $user->value($tag)
 
 =head1 DESCRIPTION
@@ -69,7 +69,7 @@ Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009-2010 Xavier Noria
+Copyright (C) 2009-2011 Xavier Noria
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

@@ -8,14 +8,7 @@ use_ok 'Net::FluidDB::Value::Float';
 my $v;
 
 $v = Net::FluidDB::Value::Float->new;
-ok !$v->is_non_native;
-ok  $v->is_native;
-ok !$v->is_null;
-ok !$v->is_boolean;
-ok !$v->is_integer;
-ok  $v->is_float;
-ok !$v->is_string;
-ok !$v->is_set;
+ok $v->type_alias eq 'float';
 
 foreach $v (123, "+123", "123.0") {
     ok '123.0' eq Net::FluidDB::Value::Float->new(value => $v)->to_json;

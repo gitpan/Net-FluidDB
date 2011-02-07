@@ -41,11 +41,11 @@ foreach my $u ($username, Net::FluidDB::User->get($fdb, $username), 'test', Net:
     ok $policy->category eq 'tags';
     ok $policy->action   eq 'update';
 
-    $policy = Net::FluidDB::Policy->get($fdb, $u, 'tag-values', 'see');
+    $policy = Net::FluidDB::Policy->get($fdb, $u, 'tag-values', 'read');
     is_policy $policy;
     ok $policy->username eq Net::FluidDB::Policy->get_username_from_user_or_username($u);
     ok $policy->category eq 'tag-values';
-    ok $policy->action   eq 'see';
+    ok $policy->action   eq 'read';
 
     $policy = Net::FluidDB::Policy->get_create_policy_for_namespaces($fdb, $u);
     is_policy $policy;
@@ -65,12 +65,11 @@ foreach my $u ($username, Net::FluidDB::User->get($fdb, $username), 'test', Net:
     is_policy(Net::FluidDB::Policy->get_delete_policy_for_tags($fdb, $u));
     is_policy(Net::FluidDB::Policy->get_control_policy_for_tags($fdb, $u));
     
-    $policy = Net::FluidDB::Policy->get_see_policy_for_tag_values($fdb, $u);
+    $policy = Net::FluidDB::Policy->get_create_policy_for_tag_values($fdb, $u);
     is_policy $policy;
     ok $policy->username eq Net::FluidDB::Policy->get_username_from_user_or_username($u);
     ok $policy->category eq 'tag-values';
-    ok $policy->action   eq 'see';
-    is_policy(Net::FluidDB::Policy->get_create_policy_for_tag_values($fdb, $u));
+    ok $policy->action   eq 'create';
     is_policy(Net::FluidDB::Policy->get_read_policy_for_tag_values($fdb, $u));
     is_policy(Net::FluidDB::Policy->get_delete_policy_for_tag_values($fdb, $u));
     is_policy(Net::FluidDB::Policy->get_control_policy_for_tag_values($fdb, $u));

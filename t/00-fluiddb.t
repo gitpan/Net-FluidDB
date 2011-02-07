@@ -89,56 +89,63 @@ ok $fdb->password eq 'i98jijojijup92jo';
 
 # -----------------------------------------------------------------------------
 
-$fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite;
+foreach my $md5 (0, 1) {
+    $fdb = Net::FluidDB->_new_for_net_fluiddb_test_suite(md5 => $md5);
 
-my $user = $fdb->user;
-my $object = $user->object;
+    my $user = $fdb->user;
+    my $object = $user->object;
 
-my $object2 = $fdb->get_object($object->id, about => 1);
-ok $object2->isa('Net::FluidDB::Object');
-ok $object2->id eq $object->id;
-ok $object2->about eq $object->about;
+    my $object2 = $fdb->get_object_by_id($object->id, about => 1);
+    ok $object2->isa('Net::FluidDB::Object');
+    ok $object2->id eq $object->id;
+    ok $object2->about eq $object->about;
 
-my $ns = $fdb->get_namespace($fdb->username);
-ok $ns->isa('Net::FluidDB::Namespace');
-ok $ns->path eq $fdb->username;
+    my $object3 = $fdb->get_object_by_about($object->about);
+    ok $object3->isa('Net::FluidDB::Object');
+    ok $object3->id eq $object->id;
+    ok $object3->about eq $object->about;
 
-my $description = random_description;
-my $name        = random_name;
-my $path        = $fdb->username . "/$name";
+    my $ns = $fdb->get_namespace($fdb->username);
+    ok $ns->isa('Net::FluidDB::Namespace');
+    ok $ns->path eq $fdb->username;
 
-my $tag = Net::FluidDB::Tag->new(
-    fdb         => $fdb,
-    description => $description,
-    indexed     => 1,
-    path        => $path
-);
+    my $description = random_description;
+    my $name        = random_name;
+    my $path        = $fdb->username . "/$name";
 
-ok $tag->create;
-ok $object->tag($tag, 0, fdb_type => 'integer');
+    my $tag = Net::FluidDB::Tag->new(
+        fdb         => $fdb,
+        description => $description,
+        indexed     => 1,
+        path        => $path
+    );
 
-my @ids = $fdb->search("$path = 0");
-ok @ids == 1;
-ok $ids[0] eq $object->id;
+    ok $tag->create;
+    ok $object->tag($tag, integer => 0);
 
-my $tag2 = $fdb->get_tag($tag->path);
-ok $tag2->isa('Net::FluidDB::Tag');
-ok $tag2->path eq $tag->path;
-ok $tag->delete;
+    my @ids = $fdb->search("$path = 0");
+    ok @ids == 1;
+    ok $ids[0] eq $object->id;
 
-my $policy = $fdb->get_policy($user, 'namespaces', 'create');
-ok $policy->isa('Net::FluidDB::Policy');
-ok $policy->username eq $user->username;
-ok $policy->category eq 'namespaces';
-ok $policy->action eq 'create';
+    my $tag2 = $fdb->get_tag($tag->path);
+    ok $tag2->isa('Net::FluidDB::Tag');
+    ok $tag2->path eq $tag->path;
+    ok $tag->delete;
 
-my $permission = $fdb->get_permission('namespaces', $user->username, 'create');
-ok $policy->isa('Net::FluidDB::Policy');
-ok $permission->category eq 'namespaces';
-ok $permission->action eq 'create';
+    my $policy = $fdb->get_policy($user, 'namespaces', 'create');
+    ok $policy->isa('Net::FluidDB::Policy');
+    ok $policy->username eq $user->username;
+    ok $policy->category eq 'namespaces';
+    ok $policy->action eq 'create';
 
-my $user2 = $fdb->get_user($user->username);
-ok $user2->isa('Net::FluidDB::User');
-ok $user2->username eq $user->username;
+    my $permission = $fdb->get_permission('namespaces', $user->username, 'create');
+    ok $policy->isa('Net::FluidDB::Policy');
+    ok $permission->category eq 'namespaces';
+    ok $permission->action eq 'create';
+
+    my $user2 = $fdb->get_user($user->username);
+    ok $user2->isa('Net::FluidDB::User');
+    ok $user2->username eq $user->username;
+}
 
 done_testing;

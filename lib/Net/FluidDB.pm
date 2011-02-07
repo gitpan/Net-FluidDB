@@ -4,6 +4,7 @@ use Moose;
 use LWP::UserAgent;
 use HTTP::Request;
 use URI;
+use Digest::MD5 'md5_base64';
 
 use Net::FluidDB::Object;
 use Net::FluidDB::Namespace;
@@ -12,7 +13,7 @@ use Net::FluidDB::Policy;
 use Net::FluidDB::Permission;
 use Net::FluidDB::User;
 
-our $VERSION           = '0.23';
+our $VERSION           = '0.30';
 our $USER_AGENT        = "Net::FluidDB/$VERSION ($^O)";
 our $DEFAULT_PROTOCOL  = 'HTTP';
 our $DEFAULT_HOST      = 'fluiddb.fluidinfo.com';
@@ -25,6 +26,7 @@ has username => (is => 'rw', isa => 'Maybe[Str]', default => sub { $ENV{FLUIDDB_
 has password => (is => 'rw', isa => 'Maybe[Str]', default => sub { $ENV{FLUIDDB_PASSWORD} });
 has ua       => (is => 'ro', isa => 'LWP::UserAgent', writer => '_set_ua');
 has user     => (is => 'ro', isa => 'Net::FluidDB::User', lazy_build => 1);
+has md5      => (is => 'rw', isa => 'Bool');
 
 sub BUILD {
     my ($self, $attrs) = @_;
@@ -81,12 +83,21 @@ sub request {
     $request->authorization_basic($self->username, $self->password);
     $request->method($method);
     $request->uri($self->uri_for(%opts));
+
     if (exists $opts{headers}) {
         while (my ($header, $value) = each %{$opts{headers}}) {
             $request->header($header => $value);
         }
     }
-    $request->content($opts{payload}) if defined $opts{payload};
+
+    if (defined $opts{payload}) {
+        $request->content($opts{payload});
+        if ($self->md5) {
+            # md5_base64 returns a string with 22 characters, we add padding
+            # up to the next multiple of 4 by hand.
+            $request->header('Content-MD5' => md5_base64($request->content) . '==');
+        }
+    }
 
     my $response = $self->ua->request($request);
     if ($response->is_success) {
@@ -101,7 +112,7 @@ sub request {
         } else {
             print STDERR $response->as_string;
             0;
-        }        
+        }
     }
 }
 
@@ -140,7 +151,16 @@ sub content_type_header_for_json {
 #
 
 sub get_object {
-    Net::FluidDB::Object->get(@_);
+    print STDERR "get_object has been deprecated and will be removed, please use get_object_by_id instead\n";
+    &get_object_by_id;
+}
+
+sub get_object_by_id {
+    Net::FluidDB::Object->get_by_id(@_);
+}
+
+sub get_object_by_about {
+    Net::FluidDB::Object->get_by_about(@_);
 }
 
 sub search {
@@ -183,28 +203,32 @@ Net::FluidDB - A Perl interface to FluidDB
 
  use Net::FluidDB;
 
- # predefined FluidDB client for playing around, points
+ # Predefined FluidDB client for playing around, points
  # to the sandbox with user test/test
  $fdb = Net::FluidDB->new_for_testing;
  $fdb = Net::FluidDB->new_for_testing(trace_http => 1);
 
  # FluidDB client pointing to production
  $fdb = Net::FluidDB->new(username => 'username', password => 'password');
- 
+
  # FluidDB taking credentials from environment variables
  # FLUIDDB_USERNAME and FLUIDDB_PASSWORD
  $fdb = Net::FluidDB->new;
 
+ # Content-MD5 headers with checksums for requests with payload
+ $fdb = Net::FluidDB->new(md5 => 1)
+
  # Resource getters
- my $object     = $fdb->get_object($object_id, about => 1);
- my $ns         = $fdb->get_namespace($path, description => 1);
- my $tag        = $fdb->get_tag($path, description => 1);
- my $policy     = $fdb->get_policy($user, $category, $action);
- my $permission = $fdb->get_permission($category, $path, $action);
- my $user       = $fdb->get_user($username);
+ $object     = $fdb->get_object_by_id($id, about => 1);
+ $object     = $fdb->get_object_by_about($about);
+ $ns         = $fdb->get_namespace($path, description => 1);
+ $tag        = $fdb->get_tag($path, description => 1);
+ $policy     = $fdb->get_policy($user, $category, $action);
+ $permission = $fdb->get_permission($category, $path, $action);
+ $user       = $fdb->get_user($username);
 
  # Object search
- my @ids = $fdb->search("has fxn/rating");
+ @ids = $fdb->search("has fxn/rating");
 
 =head1 DESCRIPTION
 
@@ -231,7 +255,7 @@ L<http://api.fluidinfo.com/fluidDB/api/*/*/*>
 
 =item FluidDB Essence blog posts
 
-L<http://blogs.fluidinfo.com/fluidDB/category/essence/> 
+L<http://blogs.fluidinfo.com/fluidDB/category/essence/>
 
 =head1 USAGE
 
@@ -269,6 +293,11 @@ Either 'HTTP' or 'HTTPS'. Defaults to 'HTTP'.
 
 The FluidDB host. Defaults to I<fluiddb.fluidinfo.com>.
 
+=item md5
+
+If this flag is true requests with payload get a Content-MD5
+header with a checksum.
+
 =item trace_http_requests
 
 A flag, logs all HTTP requests if true.
@@ -282,7 +311,7 @@ A flag, logs all HTTP responses if true.
 A flag, logs all HTTP requests and responses if true. (Shorthand for
 enabling the two above.)
 
-=back 
+=back
 
 =item Net::FluidDB->new_for_testing
 
@@ -321,11 +350,15 @@ Returns the instance of L<LWP::UserAgent> used to communicate with FluidDB.
 =item $fdb->user
 
 Returns the user on behalf of whom fdb is doing calls. This attribute
-is lazy loaded. 
+is lazy loaded.
 
-=item $fdb->get_object
+=item $fdb->get_object_by_id
 
-Convenience shortcut for C<Net::FluidDB::Object::get>, see L<Net::FluidDB::Object>.
+Convenience shortcut for C<Net::FluidDB::Object::get_by_id>, see L<Net::FluidDB::Object>.
+
+=item $fdb->get_object_by_about
+
+Convenience shortcut for C<Net::FluidDB::Object::get_by_about>, see L<Net::FluidDB::Object>.
 
 =item $fdb->search
 
@@ -359,7 +392,7 @@ Xavier Noria (FXN), E<lt>fxn@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009-2010 Xavier Noria
+Copyright (C) 2009-2011 Xavier Noria
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

@@ -16,7 +16,8 @@ WriteMakefile(
         'LWP'                    => 0,
         'Moose'                  => 0,
         'MooseX::ClassAttribute' => 0,
-        'JSON::XS'               => 0
+        'JSON::XS'               => 0,
+        'Digest::MD5'            => 0
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Net-FluidDB-*' },

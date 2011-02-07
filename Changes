@@ -1,13 +1,31 @@
 Revision history for Net-FluidDB
 
-0.13    2010-08-13
+0.30    2011-02-07
+        * Implements Net::FluidDB::Object->has_tag as a cheap way to check whether
+          an object, given its ID, has a certain tag (issues a HEAD request).
+        * Net::FluidDB objects have a new md5 flag. If true, requests with payload
+          get a Content-MD5 header with a checksum.
+        * Removes support for the now gone SEE permission for tag values.
+        * Deprecates Net::FluidDB->get_object, use the new Net::FluidDB->get_object_by_id instead.
+        * Deprecates Net::FluidDB::Object->get, use the new Net::FluidDB::Object->get_by_id instead.
+        * Implements Net::FluidDB->get_object_by_about.
+        * Implements Net::FluidDB::Object->get_by_about.
+
+0.23    2010-08-13
         * The suite is red in the machines of some CPAN Testers (FTW!)
           due to a floating point comparison in an assertion. Fixes that.
 
-0.12    2010-08-12
+0.22    2010-08-12
         * Tested against the minor update released today
         * "update" is no longer an action of the "tag-values" category
         * The test suite runs now against the main instance with the net-fluiddb user
+
+0.20    2010-02-27
+        * New interface for tagging. The change is not backwards
+          compatible, the previous interface is gone. Please check
+          the documentation of Net::FluidDB::Object.
+        * Net::FluidDB::Value and its descendants no longer belong
+          to the public interface.
 
 0.11    2010-02-01
         * Bug fix: An object created with about has an about tag (reported by JMERELO)
